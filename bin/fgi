@@ -1,0 +1,56 @@
+# @author Matthieu Gourvénec <matthieu.gourvenec@gmail.com>
+#!/usr/bin/env ruby
+
+require_relative '../lib/fgi'
+
+argv = ARGV
+
+
+# Getting all the given options
+options = {}
+options_parser = OptionParser.new do |fgi|
+  fgi.banner = 'Usage: fgi COMMAND [OPTION]'
+  fgi.separator ''
+  fgi.separator 'Commands'
+  fgi.separator '    new [ISSUE_NAME] : create the issue with the given name.'
+  fgi.separator '    ... more comming soon ...'
+  fgi.separator ''
+  fgi.separator 'Options'
+
+  fgi.on('-e', '--estimate ESTIMATION', 'How many time do you think you will spend on this issue ?') do |estimate|
+    options[:estimate] = estimate
+  end
+
+  fgi.on('-h', '--help', 'Display the FGI manual') do
+    puts options_parser
+  end
+end
+
+options_parser.parse!
+
+def get_issue_description
+  puts "\nWrite your issue description right bellow (save and quit with CTRL+D) :"
+  puts "-----------------------------------------------------------------------\n\n"
+
+  begin
+    STDIN.read
+  rescue Interrupt => int
+    puts %q"Why did you killed me ? :'("
+    exit!
+  end
+end
+
+# Check the user needs and run the corresponding action
+case argv[0]
+when 'config'
+  Fgi::Configuration.new_config
+when 'new'
+  if argv[1].nil? || argv[1].start_with?('-')
+    puts %q(You didn't specified the issue title.)
+    exit!
+  end
+  description = get_issue_description
+  Fgi::GitService.create_issue(title: argv[1], description: description)
+else
+  puts options_parser
+end
