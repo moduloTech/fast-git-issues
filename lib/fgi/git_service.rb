@@ -6,7 +6,7 @@ module Fgi
 
       def services
         services = []
-        Dir.entries('lib/fgi/git_services').each do |service|
+        Dir.entries("#{File.dirname(__FILE__)}/git_services").each do |service|
           services << service.gsub(/.rb/, '').to_sym unless %w(. ..).include?(service)
         end
         services

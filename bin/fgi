@@ -1,10 +1,9 @@
-# @author Matthieu Gourvénec <matthieu.gourvenec@gmail.com>
 #!/usr/bin/env ruby
+# @author Matthieu Gourvénec <matthieu.gourvenec@gmail.com>
 
 require_relative '../lib/fgi'
 
 argv = ARGV
-
 
 # Getting all the given options
 options = {}
