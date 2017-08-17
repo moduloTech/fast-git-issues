@@ -34,7 +34,7 @@ module Fgi
         config[:url]               = save_git_url
 
         # Instanciation of the Git service class
-        git_service                = config[:git_service_class].new(config)
+        git_service                = config[:git_service_class].new(config: config)
         config[:git_service]       = git_service.to_sym
         user_token                 = save_user_token(git_service)
         project_name_and_id        = define_project_name_and_id(git_service, user_token)
@@ -44,7 +44,7 @@ module Fgi
         #          CREATORS          #
         # -------------------------- #
 
-        create_user_config_file(config[:git_service], user_token)
+        Fgi::Tokens.create_user_tokens_file(config[:git_service], user_token)
         create_fgi_config_file(config)
       end
 
@@ -124,8 +124,12 @@ module Fgi
       end
 
       # Ask for the user for his Git service token
+      # @param git_service [Class] the current project's git service class
       # @return [String] the user Git service token
       def save_user_token(git_service)
+        token = Fgi::Tokens.get_token(git_service)
+        token unless token.nil?
+
         puts "\nPlease enter your #{git_service.to_s} token :"
         puts '(use `fgi --help` to check how to get your token)'
         puts '-------------------------------------------------'
@@ -146,6 +150,8 @@ module Fgi
       end
 
       # Ask the user to search for the project and to select the correct one.
+      # @param git_service [Class] the current project's git service class
+      # @param user_token [String] the user's token
       # @return [Hash<String>] the hash which contain the project's slugname and id
       def define_project_name_and_id(git_service, user_token)
         puts "\nPlease enter the name of the current project :"
@@ -176,6 +182,7 @@ module Fgi
         end
       end
 
+
       def validate_project_choice(response_body)
         puts "\nPlease insert the number of the current project :"
         puts '---------------------------------------------------'
@@ -199,11 +206,6 @@ module Fgi
         puts "\nYou are now set to work on #{config[:project_slug]}."
         puts 'Your configuration has been saved to .config.fgi.yml, enjoy !'
         puts "\n#############################################################"
-      end
-
-      def create_user_config_file(git_service, token)
-        # Shouldn't we define some access restrictions on this file ?
-        File.open("#{Dir.home}/.tokens.fgi.yml", 'w') { |f| f.write({ git_service.to_sym => token }.to_yaml) }
       end
 
     end

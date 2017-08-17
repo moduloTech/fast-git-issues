@@ -3,7 +3,7 @@ module Fgi
   module GitServices
     class Gitlab
 
-      def initialize(config)
+      def initialize(config: CONFIG)
         @version = 'v4'
         @token_header = 'PRIVATE-TOKEN'
         @routes = {

@@ -6,7 +6,7 @@ require 'fgi/version'
 
 Gem::Specification.new do |spec|
   spec.name          = 'FGI'
-  spec.version       = Fgi::Version
+  spec.version       = '1.0'
   spec.authors       = ['Julien Philibin', 'Matthieu Gourvénec']
   spec.email         = %w[philib_j@modulotech.fr gourve_m@modulotech.fr]
   spec.summary       = 'Process and workflow simplifier for git projects.'

@@ -11,7 +11,9 @@ options_parser = OptionParser.new do |fgi|
   fgi.banner = 'Usage: fgi COMMAND [OPTION]'
   fgi.separator ''
   fgi.separator 'Commands'
-  fgi.separator '    new [ISSUE_NAME] : create the issue with the given name.'
+  fgi.separator '    config              : run the fgi configurator.'
+  fgi.separator '    token  [TOKEN]      : define the new user token.'
+  fgi.separator '    new    [ISSUE_NAME] : create the issue with the given name.'
   fgi.separator '    ... more comming soon ...'
   fgi.separator ''
   fgi.separator 'Options'
@@ -24,15 +26,24 @@ options_parser = OptionParser.new do |fgi|
     puts options_parser
   end
 end
-
 options_parser.parse!
 
 def get_issue_description
   puts "\nWrite your issue description right bellow (save and quit with CTRL+D) :"
   puts "-----------------------------------------------------------------------\n\n"
-
   begin
     STDIN.read
+  rescue Interrupt => int
+    puts %q"Why did you killed me ? :'("
+    exit!
+  end
+end
+
+def get_token
+  puts "\nPlease enter your token :"
+  puts "-------------------------\n\n"
+  begin
+    STDIN.gets.chomp
   rescue Interrupt => int
     puts %q"Why did you killed me ? :'("
     exit!
@@ -50,6 +61,9 @@ when 'new'
   end
   description = get_issue_description
   Fgi::GitService.create_issue(title: argv[1], description: description)
+when 'token'
+  token = argv[1] || get_token
+  Fgi::Tokens.add_token(token)
 else
   puts options_parser
 end

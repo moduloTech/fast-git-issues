@@ -13,7 +13,7 @@ module Fgi
       end
 
       def create_issue(title:, description: '')
-        git_service = CONFIG[:git_service_class].new(CONFIG)
+        git_service = CONFIG[:git_service_class].new
 
         headers = { git_service.token_header => TOKEN, 'Content-Type': 'application/json' }
         url_with_querystring = "#{git_service.routes[:issues]}?title=#{URI.encode(title)}&description=#{URI.encode(description)}"
