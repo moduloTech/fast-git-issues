@@ -4,7 +4,7 @@ lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |spec|
-  spec.name          = 'FGI'
+  spec.name          = 'fgi'
   spec.version       = '1.0'
   spec.authors       = ['Julien Philibin', 'Matthieu Gourvénec']
   spec.email         = %w[philib_j@modulotech.fr gourve_m@modulotech.fr]
