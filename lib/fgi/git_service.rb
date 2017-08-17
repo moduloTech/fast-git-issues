@@ -38,6 +38,17 @@ module Fgi
         end
       end
 
+      def get_issue_description
+        puts "\nWhat if your issue title :"
+        puts "--------------------------\n\n"
+        begin
+          STDIN.gets.chomp
+        rescue Interrupt => int
+          puts %q"Why did you killed me ? :'("
+          exit!
+        end
+      end
+
       def post_issue_display(response)
         if !response['iid'].nil?
           puts 'Your issue has been successfully created.'
