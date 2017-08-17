@@ -40,8 +40,8 @@ when 'config'
   Fgi::Configuration.new_config
 when 'new'
   Fgi.configured?
-  if argv[1].nil? || argv[1].start_with?('-')
-    puts %q(You didn't specified the issue title.)
+  argv[1].start_with?('-')
+    puts %q(You can't begin your issue's title with '-')
     exit!
   end
   Fgi::GitService.create_issue(argv[1])
