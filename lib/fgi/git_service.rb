@@ -38,7 +38,7 @@ module Fgi
         end
       end
 
-      def get_issue_description
+      def get_issue_title
         puts "\nWhat if your issue title :"
         puts "--------------------------\n\n"
         begin

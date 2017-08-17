@@ -35,6 +35,12 @@ options_parser.parse!
 #          DISPATCHER          #
 # ---------------------------- #
 
+def get_full_issue_title
+  return nil if argv[1].nil?
+  length = argv.length
+  argv[1..length].join(' ')
+end
+
 case argv[0]
 when 'config'
   Fgi::Configuration.new_config
@@ -44,7 +50,8 @@ when 'new'
     puts %q(You can't begin your issue's title with '-')
     exit!
   end
-  Fgi::GitService.create_issue(argv[1])
+  title = get_full_issue_title
+  Fgi::GitService.create_issue(title)
 when 'token'
   Fgi.configured?
   Fgi::Tokens.add_token(argv[1])
