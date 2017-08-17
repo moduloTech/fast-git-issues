@@ -53,6 +53,9 @@ module Fgi
         end
       end
 
+      # @param git_service [Class] the current project's git service class
+      # @param token [String] the token to check the validity
+      # @return [Boolean] true if the token is valid, false otherwise
       def token_valid?(git_service, token)
         response = get(url: git_service.routes[:projects], headers: { git_service.token_header => token })
         response[:status] == '200'
