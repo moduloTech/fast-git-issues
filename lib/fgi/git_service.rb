@@ -12,8 +12,9 @@ module Fgi
         services
       end
 
-      def create_issue(title:)
+      def create_issue(title)
         git_service = CONFIG[:git_service_class].new
+        title = get_issue_title if title.nil?
         description = get_issue_description
 
         headers = { git_service.token_header => TOKEN, 'Content-Type': 'application/json' }

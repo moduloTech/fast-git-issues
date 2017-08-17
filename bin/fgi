@@ -44,7 +44,7 @@ when 'new'
     puts %q(You didn't specified the issue title.)
     exit!
   end
-  Fgi::GitService.create_issue(title: argv[1])
+  Fgi::GitService.create_issue(argv[1])
 when 'token'
   Fgi.configured?
   Fgi::Tokens.add_token(argv[1])
