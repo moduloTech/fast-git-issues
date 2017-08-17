@@ -12,8 +12,9 @@ module Fgi
         services
       end
 
-      def create_issue(title:, description: '')
+      def create_issue(title:)
         git_service = CONFIG[:git_service_class].new
+        description = get_issue_description
 
         headers = { git_service.token_header => TOKEN, 'Content-Type': 'application/json' }
         url_with_querystring = "#{git_service.routes[:issues]}?title=#{URI.encode(title)}&description=#{URI.encode(description)}"
@@ -24,6 +25,17 @@ module Fgi
       end
 
       private
+
+      def get_issue_description
+        puts "\nWrite your issue description right bellow (save and quit with CTRL+D) :"
+        puts "-----------------------------------------------------------------------\n\n"
+        begin
+          STDIN.read
+        rescue Interrupt => int
+          puts %q"Why did you killed me ? :'("
+          exit!
+        end
+      end
 
       def post_issue_display(response)
         if !response['iid'].nil?

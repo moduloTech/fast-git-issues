@@ -5,7 +5,10 @@ require_relative '../lib/fgi'
 
 argv = ARGV
 
-# Getting all the given options
+# ----------------------------- #
+#          FGI CMD DOC          #
+# ----------------------------- #
+
 options = {}
 options_parser = OptionParser.new do |fgi|
   fgi.banner = 'Usage: fgi COMMAND [OPTION]'
@@ -28,18 +31,10 @@ options_parser = OptionParser.new do |fgi|
 end
 options_parser.parse!
 
-def get_issue_description
-  puts "\nWrite your issue description right bellow (save and quit with CTRL+D) :"
-  puts "-----------------------------------------------------------------------\n\n"
-  begin
-    STDIN.read
-  rescue Interrupt => int
-    puts %q"Why did you killed me ? :'("
-    exit!
-  end
-end
+# ---------------------------- #
+#          DISPATCHER          #
+# ---------------------------- #
 
-# Check the user needs and run the corresponding action
 case argv[0]
 when 'config'
   Fgi::Configuration.new_config
@@ -48,8 +43,7 @@ when 'new'
     puts %q(You didn't specified the issue title.)
     exit!
   end
-  description = get_issue_description
-  Fgi::GitService.create_issue(title: argv[1], description: description)
+  Fgi::GitService.create_issue(title: argv[1])
 when 'token'
   Fgi::Tokens.add_token(argv[1])
 else
