@@ -17,7 +17,7 @@ module Fgi
         title = get_issue_title if title.nil?
         description = get_issue_description
 
-        headers = { git_service.token_header => TOKEN, 'Content-Type': 'application/json' }
+        headers = { git_service.token_header => TOKEN, 'Content-Type' => 'application/json' }
         url_with_querystring = "#{git_service.routes[:issues]}?title=#{URI.encode(title)}&description=#{URI.encode(description)}"
 
         response = post(url: url_with_querystring, headers: headers)
