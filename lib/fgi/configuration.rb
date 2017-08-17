@@ -128,25 +128,8 @@ module Fgi
       # @return [String] the user Git service token
       def save_user_token(git_service)
         token = Fgi::Tokens.get_token(git_service)
-        token unless token.nil?
-
-        puts "\nPlease enter your #{git_service.to_s} token :"
-        puts '(use `fgi --help` to check how to get your token)'
-        puts '-------------------------------------------------'
-
-        begin
-          input = STDIN.gets.chomp
-          exit! if input == 'quit'
-          response = get(url: git_service.routes[:projects], headers: { git_service.token_header => input })
-          if response[:status] == '200'
-            input
-          else
-            puts "\nOops, seems to be an invalid token. Try again or quit (quit) :"
-            save_user_token(git_service)
-          end
-        rescue Interrupt => int
-          exit!
-        end
+        return token unless token.nil?
+        save_user_token(git_service)
       end
 
       # Ask the user to search for the project and to select the correct one.

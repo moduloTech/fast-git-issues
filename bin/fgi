@@ -39,17 +39,6 @@ def get_issue_description
   end
 end
 
-def get_token
-  puts "\nPlease enter your token :"
-  puts "-------------------------\n\n"
-  begin
-    STDIN.gets.chomp
-  rescue Interrupt => int
-    puts %q"Why did you killed me ? :'("
-    exit!
-  end
-end
-
 # Check the user needs and run the corresponding action
 case argv[0]
 when 'config'
@@ -62,8 +51,7 @@ when 'new'
   description = get_issue_description
   Fgi::GitService.create_issue(title: argv[1], description: description)
 when 'token'
-  token = argv[1] || get_token
-  Fgi::Tokens.add_token(token)
+  Fgi::Tokens.add_token(argv[1])
 else
   puts options_parser
 end
