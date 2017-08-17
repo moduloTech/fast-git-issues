@@ -39,12 +39,14 @@ case argv[0]
 when 'config'
   Fgi::Configuration.new_config
 when 'new'
+  Fgi.configured?
   if argv[1].nil? || argv[1].start_with?('-')
     puts %q(You didn't specified the issue title.)
     exit!
   end
   Fgi::GitService.create_issue(title: argv[1])
 when 'token'
+  Fgi.configured?
   Fgi::Tokens.add_token(argv[1])
 else
   puts options_parser

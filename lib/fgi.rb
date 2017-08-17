@@ -22,4 +22,10 @@ module Fgi
       TOKEN = YAML.load_file("#{Dir.home}/.tokens.fgi.yml")[git_service.to_sym]
     end
   end
+
+  def self.configured?
+    return if File.exists?('.config.fgi.yml')
+    puts "\nThere is no FGI configuration file on this project. Please run 'fgi config'.\n\n"
+    exit!
+  end
 end
