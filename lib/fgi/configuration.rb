@@ -28,6 +28,7 @@ module Fgi
         #    :routes
         #    :project_id
         #    :project_slug
+        #    :default_branch
         config                     = {}
 
         config[:git_service_class] = define_git_service
@@ -38,6 +39,7 @@ module Fgi
         config[:git_service]       = git_service.to_sym
         user_token                 = save_user_token(git_service)
         project_name_and_id        = define_project_name_and_id(git_service, user_token)
+        project_default_branch     = define_default_branch(git_service, user_token)
         config                     = config.merge(project_name_and_id)
 
         # -------------------------- #
@@ -110,7 +112,12 @@ module Fgi
           input = STDIN.gets.chomp
           exit! if input == 'quit'
           # force scheme if not specified
-          input = "http://#{input}" if !input.start_with?('http://', 'https://')
+          # TODO - Find a way to clear this... Find the correct scheme.
+          input = if input.start_with?('gitlab.com')
+                    "https://#{input}"
+                  elsif !input.start_with?('http://', 'https://')
+                    "http://#{input}"
+                  end
           # Call the entered url to know if it exist or not.
           # If not, would raise an exception
           get(url: input)
@@ -145,6 +152,7 @@ module Fgi
           exit! if input == 'quit'
 
           url = "#{git_service.routes[:search_projects]}#{input}"
+
           response = get(url: url, headers: { git_service.token_header => user_token })
 
           if response[:status] == '200' && !response[:body].empty?
@@ -165,10 +173,23 @@ module Fgi
         end
       end
 
+      # TODO - Check when online
+      def define_default_branch(git_service, user_token)
+        url = "#{git_service.routes[:branches]}"
+        response = get(url: url, headers: { git_service.token_header => user_token })
+
+        if response[:status] == '200' && !response[:body].empty?
+          puts "\nPlease define the default project branch :"
+          puts '------------------------------------------'
+          response[:body].each_with_index do |branch, index|
+            puts "#{index+1} - #{branch['branch_name']}"
+          end
+        end
+      end
 
       def validate_project_choice(response_body)
         puts "\nPlease insert the number of the current project :"
-        puts '---------------------------------------------------'
+        puts '-------------------------------------------------'
         input = STDIN.gets.chomp
         exit! if input == 'quit'
         input = input.to_i

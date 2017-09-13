@@ -21,7 +21,7 @@ options_parser = OptionParser.new do |fgi|
   fgi.separator ''
   fgi.separator 'Options'
 
-  fgi.on('-e', '--estimate ESTIMATION', 'How many time do you think you will spend on this issue ?') do |estimate|
+  fgi.on('-e', '--estimate [ESTIMATION]', 'How many time do you think you will spend on this issue ? (example: 1d13h37m05s)') do |estimate|
     options[:estimate] = estimate
   end
 
@@ -51,7 +51,7 @@ when 'new'
     exit!
   end
   title = get_full_issue_title(argv)
-  Fgi::GitService.create_issue(title)
+  Fgi::GitService.create_issue(title: title, estimation: options[:estimate])
 when 'token'
   Fgi.configured?
   Fgi::Tokens.add_token(argv[1])

@@ -9,7 +9,8 @@ module Fgi
         @routes = {
                      projects: "#{config[:url]}/api/#{@version}/projects",
                      search_projects: "#{config[:url]}/api/#{@version}/projects?search=",
-                     issues: "#{config[:url]}/api/#{@version}/projects/#{config[:project_id]}/issues"
+                     issues: "#{config[:url]}/api/#{@version}/projects/#{config[:project_id]}/issues",
+                     branches: "#{config[:url]}/api/#{@version}/projects/#{config[:project_id]}/branches"
                    }
       end
 

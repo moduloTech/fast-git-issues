@@ -27,6 +27,7 @@ module Fgi
       # @param body [Hash] the body to set for the request
       # @return [String] the received response from the Git service API
       def http_request(verb:, url:, headers: nil, body: nil)
+        is_https = url.start_with?('https')
         uri = URI.parse(url)
         req = case verb
               when :get
@@ -40,7 +41,7 @@ module Fgi
         # Set body if given
         req.body = body.to_json unless body.nil?
 
-        res = Net::HTTP.start(uri.host, uri.port) do |http|
+        res = Net::HTTP.start(uri.host, uri.port, use_ssl: is_https) do |http|
           http.request(req)
         end
 
