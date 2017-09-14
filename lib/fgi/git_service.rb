@@ -124,7 +124,7 @@ module Fgi
         %x(git add .)
         %x(git stash)
         puts "\nYour changes have been stashed."
-        puts 'We will let you manually `git stash pop` to get your work back if needed.'
+        puts "We will let you manually `git stash pop` to get your work back if needed.\n"
       end
 
       def snakecase(string)
