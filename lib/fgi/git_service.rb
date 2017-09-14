@@ -25,7 +25,7 @@ module Fgi
 
         post_issue_display(response_body)
 
-        create_new_branch(title)
+        create_new_branch(title) unless response_body['iid'].nil?
 
         unless estimation.nil?
           # Since GitLab version isn't up to date, we should be able to add estimations in issues comments (/estimate)
@@ -45,11 +45,15 @@ module Fgi
       def create_new_branch(issue_title)
         branch_name = snakecase(issue_title)
         unless %x(git status -s).empty?
-          puts "\nThere are unsaved changes on your current branch :\n\n"
-          system('git diff')
           begin
+            puts "\nThere are unsaved changes on your current branch."
+            puts "Do you want to see them ? (y/n)"
+            puts '-------------------------------'
+            input = STDIN.gets.chomp
+            system('git diff') if %w[y yes].include?(input)
 
             puts "\nDo you want to COMMIT theses changes ? (y/n)"
+            puts '--------------------------------------------'
             input = STDIN.gets.chomp
             if %w[y yes].include?(input)
               commit_changes
