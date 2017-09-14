@@ -1,0 +1,6 @@
+---
+:git_service_class: !ruby/class 'Fgi::GitServices::Gitlab'
+:url: http://source.modulotech.fr
+:git_service: :gitlab
+:project_slug: modulotech/fgi
+:project_id: 201

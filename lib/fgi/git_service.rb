@@ -25,7 +25,13 @@ module Fgi
 
         post_issue_display(response_body)
 
-        create_new_branch(title) unless response_body['iid'].nil? || options[:later]
+        if CONFIG[:default_branch].nil?
+          puts "\n/!\\ FGI IS NOT UP-TO-DATE /!\\"
+          puts 'We are not able to create and switch you to the new branch.'
+          puts 'Delete .config.fgi.yml and reconfigure fgi by running `fgi config`'
+        else
+          create_new_branch(title) unless response_body['iid'].nil? || options[:later]
+        end
 
         unless options[:estimate].nil?
           # Since GitLab version isn't up to date, we should be able to add estimations in issues comments (/estimate)
