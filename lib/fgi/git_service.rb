@@ -12,7 +12,7 @@ module Fgi
         services
       end
 
-      def create_issue(title: title, estimation: nil)
+      def create_issue(title: title, options: {})
         git_service = CONFIG[:git_service_class].new
         title = get_issue_title if title.nil?
         description = get_issue_description
@@ -25,11 +25,11 @@ module Fgi
 
         post_issue_display(response_body)
 
-        create_new_branch(title) unless response_body['iid'].nil?
+        create_new_branch(title) unless response_body['iid'].nil? || options[:later]
 
-        unless estimation.nil?
+        unless options[:estimate].nil?
           # Since GitLab version isn't up to date, we should be able to add estimations in issues comments (/estimate)
-          url_with_querystring = "#{git_service.routes[:issues]}/#{response_body['iid']}/time_estimate?duration=#{estimation}"
+          url_with_querystring = "#{git_service.routes[:issues]}/#{response_body['iid']}/time_estimate?duration=#{options[:estimate]}"
           response = post(url: url_with_querystring, headers: headers)
           # GitLab sucks sometimes... This API is an example
           begin
@@ -38,7 +38,7 @@ module Fgi
             response_body = response[:body]
           end
 
-          post_estimation_display(response_body, estimation)
+          post_estimation_display(response_body, options[:estimate])
         end
       end
 
@@ -65,13 +65,13 @@ module Fgi
             puts %q"Why did you killed me ? :'("
             exit!
           end
-          %x(git checkout #{CONFIG[:default_branch]}) # Be sure to be on the default branch.
-          from = %x(git branch | grep '*').gsub('* ', '').chomp
-          %x(git pull origin HEAD) # Be sure to get the remote changes locally.
-          %x(git checkout -b #{branch_name}) # Create the new branch.
-          to = %x(git branch | grep '*').gsub('* ', '').chomp
-          puts "\nYou are now working on branch #{to} created from #{from} !"
         end
+        %x(git checkout #{CONFIG[:default_branch]}) # Be sure to be on the default branch.
+        from = %x(git branch | grep '*').gsub('* ', '').chomp
+        %x(git pull origin HEAD) # Be sure to get the remote changes locally.
+        %x(git checkout -b #{branch_name}) # Create the new branch.
+        to = %x(git branch | grep '*').gsub('* ', '').chomp
+        puts "\nYou are now working on branch #{to} created from #{from} !"
       end
 
       private

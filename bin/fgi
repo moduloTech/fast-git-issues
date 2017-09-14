@@ -14,7 +14,7 @@ options_parser = OptionParser.new do |fgi|
   fgi.banner = 'Usage: fgi COMMAND [OPTION]'
   fgi.separator ''
   fgi.separator 'Commands'
-  fgi.separator '    config              : run the fgi configurator.'
+  fgi.separator '    config              : run the FGI configurator.'
   fgi.separator '    token  [TOKEN]      : define the new user token.'
   fgi.separator '    new    [ISSUE_NAME] : create the issue with the given name.'
   fgi.separator '    ... more comming soon ...'
@@ -23,6 +23,10 @@ options_parser = OptionParser.new do |fgi|
 
   fgi.on('-e', '--estimate [ESTIMATION]', 'How many time do you think you will spend on this issue ? (example: 1d13h37m05s)') do |estimate|
     options[:estimate] = estimate
+  end
+
+  fgi.on('-l', '--later', 'Tell FGI that you anly want to create an issue but not to create and switch branch.') do
+    options[:later] = true
   end
 
   fgi.on('-h', '--help', 'Display the FGI manual') do
@@ -51,7 +55,7 @@ when 'new'
     exit!
   end
   title = get_full_issue_title(argv)
-  Fgi::GitService.create_issue(title: title, estimation: options[:estimate])
+  Fgi::GitService.create_issue(title: title, options: options)
 when 'token'
   Fgi.configured?
   Fgi::Tokens.add_token(argv[1])
