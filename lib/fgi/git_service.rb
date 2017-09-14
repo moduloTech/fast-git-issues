@@ -13,7 +13,6 @@ module Fgi
       end
 
       def create_issue(title: title, estimation: nil)
-        create_new_branch(title)
         git_service = CONFIG[:git_service_class].new
         title = get_issue_title if title.nil?
         description = get_issue_description
@@ -25,6 +24,8 @@ module Fgi
         response_body = JSON.parse(response[:body])
 
         post_issue_display(response_body)
+
+        create_new_branch(title)
 
         unless estimation.nil?
           # Since GitLab version isn't up to date, we should be able to add estimations in issues comments (/estimate)
