@@ -13,6 +13,7 @@ module Fgi
       end
 
       def create_issue(title: title, estimation: nil)
+        create_new_branch(title)
         git_service = CONFIG[:git_service_class].new
         title = get_issue_title if title.nil?
         description = get_issue_description
@@ -40,14 +41,32 @@ module Fgi
         end
       end
 
-      def create_new_branch
-        # %x(git status -s) # Analyse the return.
-        # %x(git add .) # Copy the uncommited changes.
-        # %x(git stash) # Optional, ask the user.
-        # %x(git checkout CONFIG[:default_branch]) # Be sure to be on the default branch.
-        # %x(git pull origin HEAD) # Be sure to get the remote changes locally.
-        # %x(git checkout -b new_issue_name) # Create the new branch.
-        # %x(git stash pop) # Paste the previously uncommited changes.
+      def create_new_branch(issue_title)
+        branch_name = snakecase(issue_title)
+        unless %x(git status -s).empty?
+          puts "\nThere are unsaved changes on your current branch :\n\n"
+          system('git diff')
+          begin
+
+            puts "\nDo you want to COMMIT theses changes ? (y/n)"
+            input = STDIN.gets.chomp
+            if %w[y yes].include?(input)
+              commit_changes
+            else
+              stash_changes
+            end
+
+          rescue Interrupt => int
+            puts %q"Why did you killed me ? :'("
+            exit!
+          end
+          %x(git checkout #{CONFIG[:default_branch]}) # Be sure to be on the default branch.
+          from = %x(git branch | grep '*').gsub('* ', '').chomp
+          %x(git pull origin HEAD) # Be sure to get the remote changes locally.
+          %x(git checkout -b #{branch_name}) # Create the new branch.
+          to = %x(git branch | grep '*').gsub('* ', '').chomp
+          puts "\nYou are now working on branch #{to} created from #{from} !"
+        end
       end
 
       private
@@ -86,11 +105,37 @@ module Fgi
 
       def post_estimation_display(response, estimation)
         if response['human_time_estimate'].nil?
-          puts "\nWe weren't able to save your estimation. You'll have to do it manually on #{CONFIG[:git_service].capitalize}."
+          puts "\nWe weren't able to save your estimation."
+          puts "You'll have to do it manually on #{CONFIG[:git_service].capitalize}."
         else
           puts "\nYou have #{estimation} to resolve this issue. Good luck ;)"
         end
       end
+
+      def commit_changes
+        puts 'Enter your commit message :'
+        commit_message = STDIN.gets.chomp
+        %x(git add .)
+        %x(git commit -am '#{commit_message}')
+        puts 'Your changes have been commited !'
+      end
+
+      def stash_changes
+        %x(git add .)
+        %x(git stash)
+        puts "\nYour changes have been stashed."
+        puts 'We will let you manually `git stash pop` to get your work back if needed.'
+      end
+
+      def snakecase(string)
+        string.gsub(/::/, '/').
+               gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').
+               gsub(/([a-z\d])([A-Z])/,'\1_\2').
+               tr('-', '_').
+               tr(' ', '_').
+               downcase
+      end
+
     end
   end
 end

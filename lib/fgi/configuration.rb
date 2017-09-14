@@ -35,12 +35,15 @@ module Fgi
         config[:url]               = save_git_url
 
         # Instanciation of the Git service class
+        # TODO - HARD REFECTO NEEDED HERE...
         git_service                = config[:git_service_class].new(config: config)
         config[:git_service]       = git_service.to_sym
         user_token                 = save_user_token(git_service)
         project_name_and_id        = define_project_name_and_id(git_service, user_token)
-        project_default_branch     = define_default_branch(git_service, user_token)
         config                     = config.merge(project_name_and_id)
+        git_service                = config[:git_service_class].new(config: config)
+        config[:default_branch]    = define_default_branch(git_service, user_token)
+
 
         # -------------------------- #
         #          CREATORS          #
@@ -161,7 +164,13 @@ module Fgi
               puts "#{index+1} - #{project['name_with_namespace']}"
             end
 
-            validate_project_choice(response[:body])
+            puts "\nPlease insert the number of the current project :"
+            puts '-------------------------------------------------'
+            input = validate_choice(response[:body])
+            {
+              project_slug: response[:body][input - 1]['path_with_namespace'],
+              project_id:   response[:body][input - 1]['id']
+            }
 
           else
             puts "\nOops, we couldn't find a project called #{input}. Try again or quit (quit) :"
@@ -173,34 +182,39 @@ module Fgi
         end
       end
 
-      # TODO - Check when online
       def define_default_branch(git_service, user_token)
+        puts "\nPlease define the default project branch :"
+        puts '------------------------------------------'
+
         url = "#{git_service.routes[:branches]}"
         response = get(url: url, headers: { git_service.token_header => user_token })
 
         if response[:status] == '200' && !response[:body].empty?
-          puts "\nPlease define the default project branch :"
-          puts '------------------------------------------'
-          response[:body].each_with_index do |branch, index|
-            puts "#{index+1} - #{branch['branch_name']}"
+          begin
+            response[:body].each_with_index do |branch, index|
+              puts "#{index+1} - #{branch['name']}"
+            end
+
+            puts "\nPlease insert the number of the default project branch :"
+            puts '--------------------------------------------------------'
+            input = validate_choice(response[:body])
+            response[:body][input - 1]['name']
+
+          rescue Interrupt => int
+            exit!
           end
         end
       end
 
-      def validate_project_choice(response_body)
-        puts "\nPlease insert the number of the current project :"
-        puts '-------------------------------------------------'
+      def validate_choice(response_body)
         input = STDIN.gets.chomp
         exit! if input == 'quit'
         input = input.to_i
         if (1..response_body.count).include?(input)
-          {
-            project_slug: response_body[input - 1]['path_with_namespace'],
-            project_id:   response_body[input - 1]['id']
-          }
+          input
         else
           puts "\nSorry, the option is out of range. Try again :"
-          validate_project_choice(response_body)
+          validate_choice(response_body)
         end
       end
 
