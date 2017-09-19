@@ -74,7 +74,8 @@ module Fgi
         end
         %x(git checkout #{CONFIG[:default_branch]}) # Be sure to be on the default branch.
         from = %x(git branch | grep '*').gsub('* ', '').chomp
-        %x(git pull origin HEAD) # Be sure to get the remote changes locally.
+        git_remote = %x(git remote)
+        %x(git pull #{git_remote} HEAD) # Be sure to get the remote changes locally.
         %x(git checkout -b #{branch_name}) # Create the new branch.
         to = %x(git branch | grep '*').gsub('* ', '').chomp
         puts "\nYou are now working on branch #{to} created from #{from} !"

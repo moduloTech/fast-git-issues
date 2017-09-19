@@ -116,11 +116,11 @@ module Fgi
           exit! if input == 'quit'
           # force scheme if not specified
           # TODO - Find a way to clear this... Find the correct scheme.
-          input = if input.start_with?('gitlab.com')
-                    "https://#{input}"
-                  elsif !input.start_with?('http://', 'https://')
-                    "http://#{input}"
-                  end
+          if input.start_with?('gitlab.com')
+            input = "https://#{input}"
+          elsif !input.start_with?('http://', 'https://')
+            input = "http://#{input}"
+          end
           # Call the entered url to know if it exist or not.
           # If not, would raise an exception
           get(url: input)
@@ -128,6 +128,8 @@ module Fgi
         rescue Interrupt => int
           exit!
         rescue Exception => e
+          puts e
+
           puts "\nOops, seems to be a bad url. Try again or quit (quit)"
           save_git_url
         end
