@@ -30,7 +30,7 @@ module Fgi
         elsif !response['iid'].nil?
           save_issue(id: response['iid'], title: response['title'].tr("'", ' '))
           branch_name = snakify(title)
-          branch_name = "#{options[:prefix]}/#{branch_name}"
+          branch_name = "#{options[:prefix]}/#{branch_name}" unless options[:prefix].nil?
           create_branch(branch_name) unless options[:later]
           set_issue_estimation(issue_id: response['iid'], estimation: options[:estimate], git_service: git_service)
         end
