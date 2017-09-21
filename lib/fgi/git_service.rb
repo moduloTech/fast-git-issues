@@ -35,7 +35,12 @@ module Fgi
       end
 
       def fix_issue
-        
+        git_remote = %x(git remote).chomp
+        %x(git add .)
+        %x(git commit -a --allow-empty-message -m '')
+        %x(git push #{git_remote} HEAD)
+        %x(git checkout #{CONFIG[:default_branch]}) # Be sure to be on the default branch.
+        puts "Congrat's ! You're now back to work on the default branch (#{CONFIG[:default_branch]})"
       end
 
       private
@@ -83,9 +88,9 @@ module Fgi
       # @param name [String] the branch name
       def create_branch(name)
         check_status
+        git_remote = %x(git remote).chomp
         %x(git checkout #{CONFIG[:default_branch]}) # Be sure to be on the default branch.
         from = %x(git branch | grep '*').gsub('* ', '').chomp
-        git_remote = %x(git remote).chomp
         %x(git pull #{git_remote} HEAD) # Be sure to get the remote changes locally.
         %x(git checkout -b #{name}) # Create the new branch.
         to = %x(git branch | grep '*').gsub('* ', '').chomp
