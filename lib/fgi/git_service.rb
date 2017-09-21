@@ -58,7 +58,7 @@ module Fgi
       private
 
       def save_issue(id:, title:)
-        File.open('.current_issue.fgi.yml', 'w') { |f| f.write(id: id, title: title.to_yaml) }
+        File.open('.current_issue.fgi.yml', 'w') { |f| f.write({ id: id, title: title }.to_yaml) }
       end
 
       # TODO - Make sure it works for all git services
