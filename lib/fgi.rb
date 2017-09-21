@@ -13,6 +13,7 @@ module Fgi
   require_relative 'fgi/configuration'
   require_relative 'fgi/git_service'
 
+  CURRENT_ISSUE = YAML.load_file('.current_issue.fgi.yml') if File.exists?('.current_issue.fgi.yml')
   # Define const variables if fgi config files exists
   # otherwise ask for configuration
   if File.exists?('.config.fgi.yml')

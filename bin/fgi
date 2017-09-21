@@ -33,9 +33,7 @@ options_parser = OptionParser.new do |fgi|
     options[:prefix] = prefix
   end
 
-  fgi.on('-h', '--help', 'Display the FGI manual') do
-    puts options_parser
-  end
+  fgi.on('-h', '--help', 'Display the FGI manual')
 end
 options_parser.parse!
 

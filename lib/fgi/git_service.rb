@@ -28,6 +28,7 @@ module Fgi
           puts 'We are not able to create and switch you to the new branch.'
           puts 'Delete .config.fgi.yml and reconfigure fgi by running `fgi config`'
         elsif !response['iid'].nil?
+          save_issue(id: response['iid'], title: response['title'])
           branch_name = snakify(title)
           branch_name = "#{options[:prefix]}/#{branch_name}"
           create_branch(branch_name) unless options[:later]
@@ -38,13 +39,27 @@ module Fgi
       def fix_issue
         git_remote = %x(git remote).chomp
         %x(git add .)
-        %x(git commit -a --allow-empty-message -m '')
-        %x(git push #{git_remote} HEAD)
-        %x(git checkout #{CONFIG[:default_branch]}) # Be sure to be on the default branch.
-        puts "Congrat's ! You're now back to work on the default branch (#{CONFIG[:default_branch]})"
+        puts "Are you sure to want to close the issue #{CURRENT_ISSUE[:name]} ?"
+        begin
+          input = STDIN.gets.chomp
+          if %w[y yes].include?(input)
+            %x(git commit -a --allow-empty -m 'Fix ##{CURRENT_ISSUE[:id]}')
+            %x(git push #{git_remote} HEAD)
+            %x(git checkout #{CONFIG[:default_branch]}) # Be sure to be on the default branch.
+            save_issue(id: nil, title: nil)
+            puts "Congrat's ! You're now back to work on the default branch (#{CONFIG[:default_branch]})"
+          end
+        rescue Interrupt => int
+          puts %q"Why did you killed me ? :'("
+          exit!
+        end
       end
 
       private
+
+      def save_issue(id:, title:)
+        File.open('.current_issue.fgi.yml', 'w') { |f| f.write(id: id, title: title.to_yaml) }
+      end
 
       # TODO - Make sure it works for all git services
       # The method to set the estimation time to resolve the issue
