@@ -29,6 +29,7 @@ module Fgi
           puts 'Delete .config.fgi.yml and reconfigure fgi by running `fgi config`'
         elsif !response['iid'].nil?
           branch_name = snakify(title)
+          branch_name = "#{options[:prefix]}/#{branch_name}"
           create_branch(branch_name) unless options[:later]
           set_issue_estimation(issue_id: response['iid'], estimation: options[:estimate], git_service: git_service)
         end

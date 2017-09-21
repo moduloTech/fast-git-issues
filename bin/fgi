@@ -25,8 +25,12 @@ options_parser = OptionParser.new do |fgi|
     options[:estimate] = estimate
   end
 
-  fgi.on('-l', '--later', 'Tell FGI that you anly want to create an issue but not to create and switch branch.') do
+  fgi.on('-l', '--later', 'Tell FGI that you only want to create an issue but not to create and switch branch.') do
     options[:later] = true
+  end
+
+  fgi.on('-p', '--prefix [PREFIX]', 'Tell FGI that you want to add a prefix to the branch name.') do |prefix|
+    options[:prefix] = prefix
   end
 
   fgi.on('-h', '--help', 'Display the FGI manual') do
