@@ -50,12 +50,12 @@ when 'config'
   Fgi::Configuration.new_config
 when 'new'
   Fgi.configured?
-  if argv[1].start_with?('-')
+  if !argv[1].nil? && argv[1].start_with?('-')
     puts %q(You can't begin your issue's title with '-')
     exit!
   end
   title = get_full_issue_title(argv)
-  Fgi::GitService.create_issue(title: title, options: options)
+  Fgi::GitService.new_issue(title: title, options: options)
 when 'token'
   Fgi.configured?
   Fgi::Tokens.add_token(argv[1])
