@@ -28,7 +28,7 @@ module Fgi
           puts 'We are not able to create and switch you to the new branch.'
           puts 'Delete .config.fgi.yml and reconfigure fgi by running `fgi config`'
         elsif !response['iid'].nil?
-          save_issue(id: response['iid'], title: response['title'])
+          save_issue(id: response['iid'], title: response['title'].tr("'", ' '))
           branch_name = snakify(title)
           branch_name = "#{options[:prefix]}/#{branch_name}"
           create_branch(branch_name) unless options[:later]
@@ -217,6 +217,7 @@ module Fgi
                gsub(/([a-z\d])([A-Z])/,'\1_\2').
                tr('-', '_').
                tr(' ', '_').
+               tr("'", '_').
                downcase
       end
 
