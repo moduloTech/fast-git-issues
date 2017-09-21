@@ -43,7 +43,7 @@ module Fgi
       # @param estimation [String] the estimation time given by the user
       # @param git_service [Class] the git service class to use for this project
       def set_issue_estimation(issue_id:, estimation:, git_service:)
-        unless options[:estimate].nil?
+        unless estimation.nil?
           # Since GitLab version isn't up to date, we should be able to add estimations in issues comments (/estimate)
           url_with_querystring = "#{git_service.routes[:issues]}/#{issue_id}/time_estimate?duration=#{estimation}"
           response = post(url: url_with_querystring, headers: headers)
