@@ -34,6 +34,9 @@ module Fgi
         end
       end
 
+      def fix_issue
+        
+      end
 
       private
 
