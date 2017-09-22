@@ -36,7 +36,15 @@ module Fgi
         end
       end
 
+      # All the process initiated by the issue fix
+      #   => Commiting with a 'Fix #<id>' message
+      #   => Pushing the current branch to the remote repo
+      #   => Return to the default project branch
       def fix_issue
+        if CURRENT_ISSUE[:id].nil?
+          puts 'You were not resolving an issue through FGI. We could not find any current issue to fix.'
+          exit!
+        end
         git_remote = %x(git remote).chomp
         %x(git add .)
         puts "Are you sure to want to close the issue #{CURRENT_ISSUE[:name]} ?"
@@ -57,6 +65,9 @@ module Fgi
 
       private
 
+      # Save the current user's FGI created issue in the gitignored file 'current_issue.fgi.yml'
+      # @param id [Integer] the current issue id
+      # @param title [String] the current issue name
       def save_issue(id:, title:)
         File.open('.current_issue.fgi.yml', 'w') { |f| f.write({ id: id, title: title }.to_yaml) }
       end
