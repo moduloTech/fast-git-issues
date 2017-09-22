@@ -88,7 +88,7 @@ module Fgi
           exit! if input == 'quit'
           input = input.to_i
           if (1..remotes.count).cover?(input)
-            remotes[input]
+            remotes[input-1]
           else
             puts "\nSorry, the option is out of range. Try again :"
             ask_for_remote
