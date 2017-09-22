@@ -70,8 +70,9 @@ module Fgi
         remotes = %x(git remote).split("\n")
         return remotes.first if remotes.count == 1
 
+        puts "\nHere are your remotes :"
         remotes.each_with_index do |remote, index|
-          puts "#{index} - #{remote}"
+          puts "#{index+1} - #{remote}"
         end
 
         begin
