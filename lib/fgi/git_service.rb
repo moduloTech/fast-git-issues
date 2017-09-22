@@ -47,7 +47,7 @@ module Fgi
         end
         git_remote = %x(git remote).chomp
         %x(git add .)
-        puts "Are you sure to want to close the issue #{CURRENT_ISSUE[:name]} ?"
+        puts "Are you sure to want to close the issue '#{CURRENT_ISSUE[:title]}' ?"
         begin
           input = STDIN.gets.chomp
           if %w[y yes].include?(input)
