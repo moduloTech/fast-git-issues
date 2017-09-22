@@ -2,13 +2,14 @@
 module Fgi
   class GitService
     class << self
+
       include HttpRequests
 
       # @return [Array<String>] an array containing all the git services available.
       def services
         services = []
         Dir.entries("#{File.dirname(__FILE__)}/git_services").each do |service|
-          services << service.gsub(/.rb/, '').to_sym unless %w(. ..).include?(service)
+          services << service.gsub(/.rb/, '').to_sym unless %w[. ..].include?(service)
         end
         services
       end
@@ -23,6 +24,7 @@ module Fgi
         git_service = CONFIG[:git_service_class].new
         title = get_issue_title if title.nil?
         response = create_issue(title: title, git_service: git_service)
+
         if CONFIG[:default_branch].nil?
           puts "\n/!\\ FGI IS NOT UP-TO-DATE /!\\"
           puts 'We are not able to create and switch you to the new branch.'
@@ -32,7 +34,11 @@ module Fgi
           branch_name = snakify(title)
           branch_name = "#{options[:prefix]}/#{branch_name}" unless options[:prefix].nil?
           create_branch(branch_name) unless options[:later]
-          set_issue_estimation(issue_id: response['iid'], estimation: options[:estimate], git_service: git_service)
+          set_issue_estimation(
+            issue_id:    response['iid'],
+            estimation:  options[:estimate],
+            git_service: git_service
+          )
         end
       end
 
@@ -47,18 +53,18 @@ module Fgi
           exit!
         end
         git_remote = ask_for_remote
-        %x(git add .)
+        `git add .`
         puts "Are you sure to want to close the issue #{CURRENT_ISSUE[:name]} ?"
         begin
           input = STDIN.gets.chomp
           if %w[y yes].include?(input)
-            %x(git commit -a --allow-empty -m 'Fix ##{CURRENT_ISSUE[:id]}')
-            %x(git push #{git_remote} HEAD)
-            %x(git checkout #{CONFIG[:default_branch]}) # Be sure to be on the default branch.
+            `git commit -a --allow-empty -m 'Fix ##{CURRENT_ISSUE[:id]}'`
+            `git push #{git_remote} HEAD`
+            `git checkout #{CONFIG[:default_branch]}` # Be sure to be on the default branch.
             save_issue(id: nil, title: nil)
             puts "Congrat's ! You're now back to work on the default branch (#{CONFIG[:default_branch]})"
           end
-        rescue Interrupt => int
+        rescue Interrupt
           puts %q"Why did you killed me ? :'("
           exit!
         end
@@ -67,12 +73,12 @@ module Fgi
       private
 
       def ask_for_remote
-        remotes = %x(git remote).split("\n")
+        remotes = `git remote`.split("\n")
         return remotes.first if remotes.count == 1
 
         puts "\nHere are your remotes :"
         remotes.each_with_index do |remote, index|
-          puts "#{index+1} - #{remote}"
+          puts "#{index + 1} - #{remote}"
         end
 
         begin
@@ -81,13 +87,13 @@ module Fgi
           input = STDIN.gets.chomp
           exit! if input == 'quit'
           input = input.to_i
-          if (1..remotes.count).include?(input)
+          if (1..remotes.count).cover?(input)
             remotes[input]
           else
             puts "\nSorry, the option is out of range. Try again :"
             ask_for_remote
           end
-        rescue Interrupt => int
+        rescue Interrupt
           puts %q"Why did you killed me ? :'("
           exit!
         end
@@ -100,28 +106,27 @@ module Fgi
         File.open('.current_issue.fgi.yml', 'w') { |f| f.write({ id: id, title: title }.to_yaml) }
       end
 
-      # TODO - Make sure it works for all git services
+      # TODO, Make sure it works for all git services
       # The method to set the estimation time to resolve the issue
       # @param issue_id [Integer] the issue id to set its estimation time
       # @param estimation [String] the estimation time given by the user
       # @param git_service [Class] the git service class to use for this project
       def set_issue_estimation(issue_id:, estimation:, git_service:)
-        unless estimation.nil?
-          # Since GitLab version isn't up to date, we should be able to add estimations in issues comments (/estimate)
-          url_with_querystring = "#{git_service.routes[:issues]}/#{issue_id}/time_estimate?duration=#{estimation}"
-          response = post(url: url_with_querystring, headers: headers)
-          # GitLab sucks sometimes... This API is an example
-          begin
-            response_body = JSON.parse(response[:body])
-          rescue Exception => e
-            response_body = response[:body]
-          end
-
-          post_estimation_display(response_body['human_time_estimate'], estimation)
+        return if estimation.nil?
+        # Since GitLab version isn't up to date, we should be able
+        #   to add estimations in issues comments (/estimate)
+        url_with_querystring = "#{git_service.routes[:issues]}/#{issue_id}/time_estimate?duration=#{estimation}"
+        response = post(url: url_with_querystring, headers: headers)
+        # GitLab sucks sometimes... This API is an example
+        begin
+          response_body = JSON.parse(response[:body])
+        rescue Exception
+          response_body = response[:body]
         end
+        post_estimation_display(response_body['human_time_estimate'], estimation)
       end
 
-      # TODO - Make sure it works for all git services
+      # TODO, Make sure it works for all git services
       # The method used to create issues
       # @param title [String] the issue title
       # @param git_service [Class] the git service class to use for this project
@@ -130,7 +135,7 @@ module Fgi
         description = get_issue_description
 
         headers = { git_service.token_header => TOKEN, 'Content-Type' => 'application/json' }
-        url_with_querystring = "#{git_service.routes[:issues]}?title=#{URI.encode(title)}&description=#{URI.encode(description)}"
+        url_with_querystring = "#{git_service.routes[:issues]}?title=#{CGI.escape(title)}&description=#{CGI.escape(description)}"
 
         response = post(url: url_with_querystring, headers: headers)
         response_body = JSON.parse(response[:body])
@@ -144,11 +149,11 @@ module Fgi
       def create_branch(name)
         check_status
         git_remote = ask_for_remote
-        %x(git checkout #{CONFIG[:default_branch]}) # Be sure to be on the default branch.
-        from = %x(git branch | grep '*').gsub('* ', '').chomp
-        %x(git pull #{git_remote} HEAD) # Be sure to get the remote changes locally.
-        %x(git checkout -b #{name}) # Create the new branch.
-        to = %x(git branch | grep '*').gsub('* ', '').chomp
+        `git checkout #{CONFIG[:default_branch]}` # Be sure to be on the default branch.
+        from = `git branch | grep '*'`.gsub('* ', '').chomp
+        `git pull #{git_remote} HEAD` # Be sure to get the remote changes locally.
+        `git checkout -b #{name}` # Create the new branch.
+        to = `git branch | grep '*'`.gsub('* ', '').chomp
         puts "\nYou are now working on branch #{to} created from #{from} !"
       end
 
@@ -159,7 +164,7 @@ module Fgi
         puts "-----------------------------------------------------------------------\n\n"
         begin
           STDIN.read
-        rescue Interrupt => int
+        rescue Interrupt
           puts %q"Why did you killed me ? :'("
           exit!
         end
@@ -172,7 +177,7 @@ module Fgi
         puts "--------------------------\n\n"
         begin
           STDIN.gets.chomp
-        rescue Interrupt => int
+        rescue Interrupt
           puts %q"Why did you killed me ? :'("
           exit!
         end
@@ -182,7 +187,7 @@ module Fgi
       #   if the issue has correctly been created
       # @param issue_id [Integer] the id of the created issue
       def post_issue_display(issue_id)
-        unless issue_id.nil?
+        if !issue_id.nil?
           puts 'Your issue has been successfully created.'
           puts 'To view it, please follow the link bellow :'
           puts "\n#{CONFIG[:url]}/#{CONFIG[:project_slug]}/issues/#{issue_id}"
@@ -208,42 +213,41 @@ module Fgi
       def commit_changes
         puts 'Enter your commit message :'
         commit_message = STDIN.gets.chomp
-        %x(git add .)
-        %x(git commit -am '#{commit_message}')
+        `git add .`
+        `git commit -am '#{commit_message}'`
         puts 'Your changes have been commited !'
       end
 
       # The method used to stash the user's local changes
       def stash_changes
-        %x(git add .)
-        %x(git stash)
+        `git add .`
+        `git stash`
         puts "\nYour changes have been stashed."
-        puts "We will let you manually `git stash pop` to get your work back if needed.\n"
+        puts "We will let you manually git stash pop to get your work back if needed.\n"
       end
 
       # The method used to check if there are local changes and to
       #   ask the user if he want to commit or stash theses changes
       def check_status
-        unless %x(git status -s).empty?
-          begin
-            puts "\nThere are unsaved changes on your current branch."
-            puts "Do you want to see them ? (y/n)"
-            puts '-------------------------------'
-            input = STDIN.gets.chomp
-            system('git diff') if %w[y yes].include?(input)
+        return if `git status -s`.empty?
+        begin
+          puts "\nThere are unsaved changes on your current branch."
+          puts 'Do you want to see them ? (y/n)'
+          puts '-------------------------------'
+          input = STDIN.gets.chomp
+          system('git diff') if %w[y yes].include?(input)
 
-            puts "\nDo you want to COMMIT theses changes ? (y/n)"
-            puts '--------------------------------------------'
-            input = STDIN.gets.chomp
-            if %w[y yes].include?(input)
-              commit_changes
-            else
-              stash_changes
-            end
-          rescue Interrupt => int
-            puts %q"Why did you killed me ? :'("
-            exit!
+          puts "\nDo you want to COMMIT theses changes ? (y/n)"
+          puts '--------------------------------------------'
+          input = STDIN.gets.chomp
+          if %w[y yes].include?(input)
+            commit_changes
+          else
+            stash_changes
           end
+        rescue Interrupt
+          puts %q"Why did you killed me ? :'("
+          exit!
         end
       end
 
@@ -251,13 +255,13 @@ module Fgi
       # @param string [String] the string to snakify
       # @return [String] the snakified string
       def snakify(string)
-        string.gsub(/::/, '/').
-               gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').
-               gsub(/([a-z\d])([A-Z])/,'\1_\2').
-               tr('-', '_').
-               tr(' ', '_').
-               tr("'", '_').
-               downcase
+        string.gsub(/::/, '/')
+              .gsub(/([A-Z]+)([A-Z][a-z])/, '\1_\2')
+              .gsub(/([a-z\d])([A-Z])/, '\1_\2')
+              .tr('-', '_')
+              .tr(' ', '_')
+              .tr("'", '_')
+              .downcase
       end
 
     end

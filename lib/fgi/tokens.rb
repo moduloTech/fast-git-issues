@@ -2,12 +2,13 @@
 module Fgi
   class Tokens
     class << self
+
       include HttpRequests
 
       # @param git_service_name [String] the git service to associate a token to
       # @param token [String] the token to associate to the git service
       def create_user_tokens_file(git_service, token)
-        if File.exists?("#{Dir.home}/.tokens.fgi.yml")
+        if File.exist?("#{Dir.home}/.tokens.fgi.yml")
           tokens = YAML.load_file("#{Dir.home}/.tokens.fgi.yml")
           tokens[git_service] = token
         else
@@ -35,11 +36,11 @@ module Fgi
       # @return [String] the current token associated to the project's git service
       # @return [NilClass] if there is no token associated to the project's git service
       def get_token(git_service)
-        if File.exists?("#{Dir.home}/.tokens.fgi.yml")
+        if File.exist?("#{Dir.home}/.tokens.fgi.yml")
           tokens = YAML.load_file("#{Dir.home}/.tokens.fgi.yml")
           tokens[git_service.to_sym]
         else
-          puts "\nPlease enter your #{git_service.to_s} token :"
+          puts "\nPlease enter your #{git_service} token :"
           puts '(use `fgi --help` to check how to get your token)'
           puts '-------------------------------------------------'
           begin
@@ -47,7 +48,7 @@ module Fgi
             exit! if token == 'quit'
             return token if token_valid?(git_service, token)
             nil
-          rescue Interrupt => int
+          rescue Interrupt
             exit!
           end
         end
@@ -57,7 +58,10 @@ module Fgi
       # @param token [String] the token to check the validity
       # @return [Boolean] true if the token is valid, false otherwise
       def token_valid?(git_service, token)
-        response = get(url: git_service.routes[:projects], headers: { git_service.token_header => token })
+        response = get(
+          url:     git_service.routes[:projects],
+          headers: { git_service.token_header => token }
+        )
         response[:status] == '200'
       end
 

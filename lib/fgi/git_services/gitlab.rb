@@ -3,27 +3,18 @@ module Fgi
   module GitServices
     class Gitlab
 
+      attr_reader :version, :token_header, :routes
+
       def initialize(config: CONFIG)
-        @version = 'v4'
+        @version      = 'v4'
+        @main_url     = "#{config[:url]}/api/#{@version}"
         @token_header = 'PRIVATE-TOKEN'
         @routes = {
-                     projects: "#{config[:url]}/api/#{@version}/projects",
-                     search_projects: "#{config[:url]}/api/#{@version}/projects?search=",
-                     issues: "#{config[:url]}/api/#{@version}/projects/#{config[:project_id]}/issues",
-                     branches: "#{config[:url]}/api/#{@version}/projects/#{config[:project_id]}/repository/branches"
-                   }
-      end
-
-      def version
-        @version
-      end
-
-      def token_header
-        @token_header
-      end
-
-      def routes
-        @routes
+          projects:        "#{@main_url}/projects",
+          search_projects: "#{@main_url}/projects?search=",
+          issues:          "#{@main_url}/projects/#{config[:project_id]}/issues",
+          branches:        "#{@main_url}/projects/#{config[:project_id]}/repository/branches"
+        }
       end
 
       def to_sym

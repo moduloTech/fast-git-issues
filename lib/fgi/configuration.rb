@@ -2,6 +2,7 @@
 module Fgi
   class Configuration
     class << self
+
       include HttpRequests
 
       # Launch the process to create the fresh project fgi config file
@@ -20,7 +21,6 @@ module Fgi
         # -------------------------- #
         #        INITIALIZERS        #
         # -------------------------- #
-
 
         # The hash that will contain the project's fgi configuration to save as yml
         # It will contain :
@@ -44,7 +44,6 @@ module Fgi
         git_service                = config[:git_service_class].new(config: config)
         config[:default_branch]    = define_default_branch(git_service, user_token)
 
-
         # -------------------------- #
         #          CREATORS          #
         # -------------------------- #
@@ -57,21 +56,19 @@ module Fgi
 
       # Check if we are in a git repository. Exit FGI if not.
       def git_directory?
-        unless Dir.exists?('.git')
-          puts 'You are not in a git project repository.'
-          exit!
-        end
+        return if Dir.exist?('.git')
+        puts 'You are not in a git project repository.'
+        exit!
       end
 
       # Check if FGI has already been configured. Exit FGI if not.
       def already_configured?
-        if File.exists?('.config.fgi.yml')
-          puts 'There is already a FGI config on this project.'
-          exit!
-        end
+        return unless File.exist?('.config.fgi.yml')
+        puts 'There is already a FGI config on this project.'
+        exit!
       end
 
-      # Ask the user to shoose the project's Git service
+      # Ask the user to shoose the project's Git service
       # @return [Class] the project's Git service class
       def define_git_service
         puts "\nPlease insert the number of the used Git service :"
@@ -81,9 +78,9 @@ module Fgi
         git_services = Fgi::GitService.services
         # Display theses services to let the user choose the project's one
         git_services.each_with_index do |service, index|
-          puts "#{index+1} : #{service.capitalize}"
+          puts "#{index + 1} : #{service.capitalize}"
         end
-        puts "... More soon ..."
+        puts '... More soon ...'
 
         begin
           input = STDIN.gets.chomp
@@ -91,15 +88,15 @@ module Fgi
           # Convert the string input to an integer
           input = input.to_i
           # If the input isn't out of range...
-          if (1..git_services.count).include?(input)
+          if (1..git_services.count).cover?(input)
             # Set a variable with the Git service name for displays
-            @git_service = git_services[input-1].capitalize
+            @git_service = git_services[input - 1].capitalize
             Fgi::GitServices.const_get(@git_service)
           else
             puts "\nSorry, the option is out of range. Try again :"
             define_git_service
           end
-        rescue Interrupt => int
+        rescue Interrupt
           exit!
         end
       end
@@ -125,11 +122,9 @@ module Fgi
           # If not, would raise an exception
           get(url: input)
           input
-        rescue Interrupt => int
+        rescue Interrupt
           exit!
-        rescue Exception => e
-          puts e
-
+        rescue Exception
           puts "\nOops, seems to be a bad url. Try again or quit (quit)"
           save_git_url
         end
@@ -163,7 +158,7 @@ module Fgi
           if response[:status] == '200' && !response[:body].empty?
             puts "\nFound #{response[:body].count} match(es):"
             response[:body].each_with_index do |project, index|
-              puts "#{index+1} - #{project['name_with_namespace']}"
+              puts "#{index + 1} - #{project['name_with_namespace']}"
             end
 
             puts "\nPlease insert the number of the current project :"
@@ -176,10 +171,10 @@ module Fgi
 
           else
             puts "\nOops, we couldn't find a project called #{input}. Try again or quit (quit) :"
-            puts '-------------------------------------------------------------------'+('-'*input.length) # Don't be upset, i'm a perfectionist <3
+            puts '-------------------------------------------------------------------' + ('-' * input.length) # Don't be upset, i'm a perfectionist <3
             define_project_name_and_id(git_service, user_token)
           end
-        rescue Interrupt => int
+        rescue Interrupt
           exit!
         end
       end
@@ -188,23 +183,21 @@ module Fgi
         puts "\nPlease define the default project branch :"
         puts '------------------------------------------'
 
-        url = "#{git_service.routes[:branches]}"
+        url = git_service.routes[:branches]
         response = get(url: url, headers: { git_service.token_header => user_token })
+        return unless response[:status] == '200' && !response[:body].empty?
 
-        if response[:status] == '200' && !response[:body].empty?
-          begin
-            response[:body].each_with_index do |branch, index|
-              puts "#{index+1} - #{branch['name']}"
-            end
-
-            puts "\nPlease insert the number of the default project branch :"
-            puts '--------------------------------------------------------'
-            input = validate_choice(response[:body])
-            response[:body][input - 1]['name']
-
-          rescue Interrupt => int
-            exit!
+        begin
+          response[:body].each_with_index do |branch, index|
+            puts "#{index + 1} - #{branch['name']}"
           end
+
+          puts "\nPlease insert the number of the default project branch :"
+          puts '--------------------------------------------------------'
+          input = validate_choice(response[:body])
+          response[:body][input - 1]['name']
+        rescue Interrupt
+          exit!
         end
       end
 
@@ -212,7 +205,7 @@ module Fgi
         input = STDIN.gets.chomp
         exit! if input == 'quit'
         input = input.to_i
-        if (1..response_body.count).include?(input)
+        if (1..response_body.count).cover?(input)
           input
         else
           puts "\nSorry, the option is out of range. Try again :"
