@@ -17,7 +17,7 @@ options_parser = OptionParser.new do |fgi|
   fgi.separator '    config              : run the FGI configurator.'
   fgi.separator '    token  [TOKEN]      : define the new user token.'
   fgi.separator '    new    [ISSUE_NAME] : create the issue with the given name.'
-  fgi.separator '    fix    [ISSUE_NAME] : fix the current issue.'
+  fgi.separator '    fix                 : fix the current issue.'
   fgi.separator '    ... more comming soon ...'
   fgi.separator ''
   fgi.separator 'Options'
