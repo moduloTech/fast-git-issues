@@ -61,6 +61,8 @@ when 'new'
 when 'token'
   Fgi.configured?
   Fgi::Tokens.add_token(argv[1])
+when 'fix'
+  Fgi::GitService.fix_issue
 else
   puts options_parser
 end
