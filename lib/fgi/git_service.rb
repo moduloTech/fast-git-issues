@@ -42,10 +42,11 @@ module Fgi
       #   => Return to the default project branch
       def fix_issue
         if CURRENT_ISSUE[:id].nil?
-          puts 'You were not resolving an issue through FGI. We could not find any current issue to fix.'
+          puts "\nYou were not resolving an issue through FGI."
+          puts 'We could not find any current issue to fix.'
           exit!
         end
-        git_remote = %x(git remote).chomp
+        git_remote = ask_for_remote
         %x(git add .)
         puts "Are you sure to want to close the issue #{CURRENT_ISSUE[:name]} ?"
         begin
@@ -64,6 +65,32 @@ module Fgi
       end
 
       private
+
+      def ask_for_remote
+        remotes = %x(git remote).split("\n")
+        return remotes.first if remotes.count == 1
+
+        remotes.each_with_index do |remote, index|
+          puts "#{index} - #{remote}"
+        end
+
+        begin
+          puts "\nPlease insert the number of the remote to use :"
+          puts '-----------------------------------------------'
+          input = STDIN.gets.chomp
+          exit! if input == 'quit'
+          input = input.to_i
+          if (1..remotes.count).include?(input)
+            remotes[input]
+          else
+            puts "\nSorry, the option is out of range. Try again :"
+            ask_for_remote
+          end
+        rescue Interrupt => int
+          puts %q"Why did you killed me ? :'("
+          exit!
+        end
+      end
 
       # Save the current user's FGI created issue in the gitignored file 'current_issue.fgi.yml'
       # @param id [Integer] the current issue id
@@ -115,7 +142,7 @@ module Fgi
       # @param name [String] the branch name
       def create_branch(name)
         check_status
-        git_remote = %x(git remote).chomp
+        git_remote = ask_for_remote
         %x(git checkout #{CONFIG[:default_branch]}) # Be sure to be on the default branch.
         from = %x(git branch | grep '*').gsub('* ', '').chomp
         %x(git pull #{git_remote} HEAD) # Be sure to get the remote changes locally.
