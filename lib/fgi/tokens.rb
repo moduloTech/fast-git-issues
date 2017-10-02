@@ -7,14 +7,14 @@ module Fgi
 
       # @param git_service_name [String] the git service to associate a token to
       # @param token [String] the token to associate to the git service
-      def create_user_tokens_file(git_service, token)
+      def create_user_tokens_file(config:, git_service:, token:)
         if File.exist?("#{Dir.home}/.tokens.fgi.yml")
           tokens = YAML.load_file("#{Dir.home}/.tokens.fgi.yml")
-          tokens[git_service] = { CONFIG[:url] => token }
+          tokens[git_service] = { config[:url] => token }
         else
           tokens = {
             git_service => {
-              CONFIG[:url] => token
+              config[:url] => token
             }
           }
         end
@@ -39,10 +39,10 @@ module Fgi
       # @param git_service [Class] the current project's git service class
       # @return [String] the current token associated to the project's git service
       # @return [NilClass] if there is no token associated to the project's git service
-      def get_token(git_service)
+      def get_token(config:, git_service:)
         if File.exist?("#{Dir.home}/.tokens.fgi.yml")
           tokens = YAML.load_file("#{Dir.home}/.tokens.fgi.yml")
-          tokens[git_service.to_sym]
+          tokens[git_service.to_sym][config[:url]]
         else
           puts "\nPlease enter your #{git_service} token :"
           puts '(use `fgi --help` to check how to get your token)'

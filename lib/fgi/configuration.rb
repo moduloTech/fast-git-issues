@@ -38,7 +38,7 @@ module Fgi
         # TODO - HARD REFECTO NEEDED HERE...
         git_service                = config[:git_service_class].new(config: config)
         config[:git_service]       = git_service.to_sym
-        user_token                 = save_user_token(git_service)
+        user_token                 = save_user_token(config: config, git_service: git_service)
         project_name_and_id        = define_project_name_and_id(git_service, user_token)
         config                     = config.merge(project_name_and_id)
         git_service                = config[:git_service_class].new(config: config)
@@ -48,7 +48,7 @@ module Fgi
         #          CREATORS          #
         # -------------------------- #
 
-        Fgi::Tokens.create_user_tokens_file(config[:git_service], user_token)
+        Fgi::Tokens.create_user_tokens_file(config: config, git_service: git_service, token: user_token)
         create_fgi_config_file(config)
       end
 
@@ -133,8 +133,8 @@ module Fgi
       # Ask for the user for his Git service token
       # @param git_service [Class] the current project's git service class
       # @return [String] the user Git service token
-      def save_user_token(git_service)
-        token = Fgi::Tokens.get_token(git_service)
+      def save_user_token(config:, git_service:)
+        token = Fgi::Tokens.get_token(config: config, git_service: git_service)
         return token unless token.nil?
         save_user_token(git_service)
       end
