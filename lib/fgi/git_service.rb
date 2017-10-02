@@ -58,10 +58,10 @@ module Fgi
         begin
           input = STDIN.gets.chomp
           if %w[y yes].include?(input)
+            remove_issue(current_branch)
             `git commit -a --allow-empty -m 'Fix ##{ISSUES[current_branch][:id]}'`
             `git push #{git_remote} HEAD`
             `git checkout #{CONFIG[:default_branch]}` # Be sure to be on the default branch.
-            remove_issue(current_branch)
             puts "Congrat's ! You're now back to work on the default branch (#{CONFIG[:default_branch]})"
           end
         rescue Interrupt
