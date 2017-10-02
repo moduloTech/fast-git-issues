@@ -54,7 +54,7 @@ module Fgi
         end
         git_remote = ask_for_remote
         `git add .`
-        puts "Are you sure to want to close the issue #{CURRENT_ISSUE[:name]} ?"
+        puts "Are you sure to want to close the issue #{CURRENT_ISSUE[:title]} ?"
         begin
           input = STDIN.gets.chomp
           if %w[y yes].include?(input)
