@@ -136,7 +136,6 @@ module Fgi
       def save_user_token(config:, git_service:)
         token = Fgi::Tokens.get_token(config: config, git_service: git_service)
         return token unless token.nil?
-        save_user_token(config: config, git_service: git_service)
       end
 
       # Ask the user to search for the project and to select the correct one.
