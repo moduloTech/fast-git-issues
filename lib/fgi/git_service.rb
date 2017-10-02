@@ -61,7 +61,7 @@ module Fgi
             `git commit -a --allow-empty -m 'Fix ##{ISSUES[current_branch][:id]}'`
             `git push #{git_remote} HEAD`
             `git checkout #{CONFIG[:default_branch]}` # Be sure to be on the default branch.
-            save_issue(id: nil, title: nil)
+            remove_issue(current_branch)
             puts "Congrat's ! You're now back to work on the default branch (#{CONFIG[:default_branch]})"
           end
         rescue Interrupt
@@ -115,6 +115,12 @@ module Fgi
           }
         end
         # Shouldn't we define some access restrictions on this file ?
+        File.open('.current_issues.fgi.yml', 'w') { |f| f.write(issues.to_yaml) }
+      end
+
+      def remove_issue(branch)
+        issues = YAML.load_file('.current_issues.fgi.yml')
+        issues.delete(branch) unless ISSUES[branch].nil?
         File.open('.current_issues.fgi.yml', 'w') { |f| f.write(issues.to_yaml) }
       end
 
