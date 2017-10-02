@@ -14,14 +14,19 @@ module Fgi
   require_relative 'fgi/configuration'
   require_relative 'fgi/git_service'
 
-  CURRENT_ISSUE = YAML.load_file('.current_issue.fgi.yml') if File.exist?('.current_issue.fgi.yml')
+  # Add FGI user's current issues to the gitignore
+  if `cat .gitignore | grep '.current_issues.fgi.yml'`.empty?
+    File.open('.gitignore', 'a') { |f| f.write("\n.current_issues.fgi.yml") }
+  end
+
+  ISSUES = YAML.load_file('.current_issues.fgi.yml') if File.exist?('.current_issues.fgi.yml')
   # Define const variables if fgi config files exists
   # otherwise ask for configuration
   if File.exist?('.config.fgi.yml')
     CONFIG = YAML.load_file('.config.fgi.yml')
     git_service = CONFIG[:git_service_class].new
     if File.exist?("#{Dir.home}/.tokens.fgi.yml")
-      TOKEN = YAML.load_file("#{Dir.home}/.tokens.fgi.yml")[git_service.to_sym]
+      TOKEN = YAML.load_file("#{Dir.home}/.tokens.fgi.yml")[git_service.to_sym][CONFIG[:url]]
     end
   end
 

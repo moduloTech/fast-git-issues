@@ -56,4 +56,4 @@ build-iPhoneSimulator/
 # End of https://www.gitignore.io/api/rubyi
 
 # FGI Personnal files
-.current_issue.fgi.yml
+.current_issues.fgi.yml

@@ -10,9 +10,13 @@ module Fgi
       def create_user_tokens_file(git_service, token)
         if File.exist?("#{Dir.home}/.tokens.fgi.yml")
           tokens = YAML.load_file("#{Dir.home}/.tokens.fgi.yml")
-          tokens[git_service] = token
+          tokens[git_service] = { CONFIG[:url] => token }
         else
-          tokens = { git_service => token }
+          tokens = {
+            git_service => {
+              CONFIG[:url] => token
+            }
+          }
         end
         # Shouldn't we define some access restrictions on this file ?
         File.open("#{Dir.home}/.tokens.fgi.yml", 'w') { |f| f.write(tokens.to_yaml) }

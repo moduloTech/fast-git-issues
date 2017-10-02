@@ -30,9 +30,9 @@ module Fgi
           puts 'We are not able to create and switch you to the new branch.'
           puts 'Delete .config.fgi.yml and reconfigure fgi by running `fgi config`'
         elsif !response['iid'].nil?
-          save_issue(id: response['iid'], title: response['title'].tr("'", ' '))
           branch_name = snakify(title)
           branch_name = "#{options[:prefix]}/#{branch_name}" unless options[:prefix].nil?
+          save_issue(branch: branch_name, id: response['iid'], title: response['title'].tr("'", ' '))
           create_branch(branch_name) unless options[:later]
           set_issue_estimation(
             issue_id:    response['iid'],
@@ -47,18 +47,18 @@ module Fgi
       #   => Pushing the current branch to the remote repo
       #   => Return to the default project branch
       def fix_issue
-        if CURRENT_ISSUE[:id].nil?
-          puts "\nYou were not resolving an issue through FGI."
-          puts 'We could not find any current issue to fix.'
+        current_branch = `git branch | grep '*'`.gsub('* ', '').chomp
+        if ISSUES[current_branch].nil?
+          puts "We could not find any issues to fix on your current branch (#{current_branch})."
           exit!
         end
         git_remote = ask_for_remote
         `git add .`
-        puts "Are you sure to want to close the issue #{CURRENT_ISSUE[:title]} ?"
+        puts "Are you sure to want to close the issue #{ISSUES[current_branch][:title]} ?"
         begin
           input = STDIN.gets.chomp
           if %w[y yes].include?(input)
-            `git commit -a --allow-empty -m 'Fix ##{CURRENT_ISSUE[:id]}'`
+            `git commit -a --allow-empty -m 'Fix ##{ISSUES[current_branch][:id]}'`
             `git push #{git_remote} HEAD`
             `git checkout #{CONFIG[:default_branch]}` # Be sure to be on the default branch.
             save_issue(id: nil, title: nil)
@@ -102,8 +102,20 @@ module Fgi
       # Save the current user's FGI created issue in the gitignored file 'current_issue.fgi.yml'
       # @param id [Integer] the current issue id
       # @param title [String] the current issue name
-      def save_issue(id:, title:)
-        File.open('.current_issue.fgi.yml', 'w') { |f| f.write({ id: id, title: title }.to_yaml) }
+      def save_issue(branch:, id:, title:)
+        if File.exist?('.current_issues.fgi.yml')
+          issues = YAML.load_file('.current_issues.fgi.yml')
+          issues[branch] = { id: id, title: title }
+        else
+          issues = {
+            branch => {
+              id:    id,
+              title: title
+            }
+          }
+        end
+        # Shouldn't we define some access restrictions on this file ?
+        File.open('.current_issues.fgi.yml', 'w') { |f| f.write(issues.to_yaml) }
       end
 
       # TODO, Make sure it works for all git services
