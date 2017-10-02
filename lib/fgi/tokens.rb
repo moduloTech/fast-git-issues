@@ -10,7 +10,7 @@ module Fgi
       def create_user_tokens_file(config:, git_service:, token:)
         if File.exist?("#{Dir.home}/.tokens.fgi.yml")
           tokens = YAML.load_file("#{Dir.home}/.tokens.fgi.yml")
-          tokens[git_service] = { config[:url] => token }
+          tokens[git_service.to_sym] = { config[:url] => token }
         else
           tokens = {
             git_service => {
