@@ -60,7 +60,7 @@ module Fgi
           input = STDIN.gets.chomp
           if %w[y yes].include?(input)
             commit_message =  "Fix ##{ISSUES[current_branch][:id]}"
-            commit_message += " - #{options[:fix_message]}"
+            commit_message += " - #{options[:fix_message]}" unless options[:fix_message].nil?
             `git commit -a --allow-empty -m '#{commit_message}'`
             `git push #{git_remote} HEAD`
             `git checkout #{CONFIG[:default_branch]}` # Be sure to be on the default branch.
