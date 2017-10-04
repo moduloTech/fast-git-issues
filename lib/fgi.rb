@@ -18,7 +18,7 @@ module Fgi
 
   # Add FGI user's current issues to the gitignore
   if `cat .gitignore | grep '.current_issues.fgi.yml'`.empty?
-    File.open('.gitignore', 'a') { |f| f.write("\n.current_issues.fgi.yml") }
+    File.open('.gitignore', 'a') { |f| f.write("\n.current_issues.fgi.yml\n") }
   end
 
   ISSUES = YAML.load_file('.current_issues.fgi.yml') if File.exist?('.current_issues.fgi.yml')
