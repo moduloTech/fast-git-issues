@@ -2,7 +2,6 @@
 # Created by https://www.gitignore.io/api/ruby
 
 ### Ruby ###
-*.gem
 *.rbc
 /.config
 /coverage/

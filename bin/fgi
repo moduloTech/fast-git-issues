@@ -22,6 +22,13 @@ options_parser = OptionParser.new do |fgi|
   fgi.separator ''
   fgi.separator 'Options'
 
+  fgi.on('-h', '--help', 'Display the FGI manual')
+
+  fgi.on('-v', '--version', 'Display the FGI version') do
+    puts "FGI #{Fgi::VERSION}"
+    exit!
+  end
+
   fgi.on('-e', '--estimate [ESTIMATION]', 'How many time do you think you will spend on this issue ? (example: 1d13h37m05s)') do |estimate|
     options[:estimate] = estimate
   end
@@ -34,7 +41,9 @@ options_parser = OptionParser.new do |fgi|
     options[:prefix] = prefix
   end
 
-  fgi.on('-h', '--help', 'Display the FGI manual')
+  fgi.on('-m', '--fix-message', %q(Add a custom message with the basic 'Fix #ID')) do |message|
+    options[:fix_message] = message
+  end
 end
 options_parser.parse!
 
@@ -63,7 +72,7 @@ when 'token'
   Fgi.configured?
   Fgi::Tokens.add_token(argv[1])
 when 'fix'
-  Fgi::GitService.fix_issue
+  Fgi::GitService.fix_issue(options)
 else
   puts options_parser
 end

@@ -46,7 +46,8 @@ module Fgi
       #   => Commiting with a 'Fix #<id>' message
       #   => Pushing the current branch to the remote repo
       #   => Return to the default project branch
-      def fix_issue
+      # @param options [Hash] the options given by the user in the command line
+      def fix_issue(options)
         current_branch = `git branch | grep '*'`.gsub('* ', '').chomp
         if ISSUES[current_branch].nil?
           puts "We could not find any issues to fix on your current branch (#{current_branch})."
@@ -58,7 +59,9 @@ module Fgi
         begin
           input = STDIN.gets.chomp
           if %w[y yes].include?(input)
-            `git commit -a --allow-empty -m 'Fix ##{ISSUES[current_branch][:id]}'`
+            commit_message =  "Fix ##{ISSUES[current_branch][:id]}"
+            commit_message += " - #{options[:fix_message]}"
+            `git commit -a --allow-empty -m '#{commit_message}'`
             `git push #{git_remote} HEAD`
             `git checkout #{CONFIG[:default_branch]}` # Be sure to be on the default branch.
             remove_issue(current_branch)
