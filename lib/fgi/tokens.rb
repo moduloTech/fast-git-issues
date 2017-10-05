@@ -28,7 +28,7 @@ module Fgi
         git_service = CONFIG[:git_service_class].new
         token = get_token(git_service) if token.nil?
         if token_valid?(git_service, token)
-          create_user_tokens_file(CONFIG[:git_service], token)
+          create_user_tokens_file(config: CONFIG, git_service: CONFIG[:git_service], token: token)
           puts "\nYour #{git_service} token has been successfully added !\n\n"
         else
           puts "\nOops, seems to be an invalid token. Try again.\n\n"
