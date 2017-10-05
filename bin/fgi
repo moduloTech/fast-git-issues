@@ -41,7 +41,7 @@ options_parser = OptionParser.new do |fgi|
     options[:prefix] = prefix
   end
 
-  fgi.on('-m', '--fix-message', %q(Add a custom message with the basic 'Fix #ID')) do |message|
+  fgi.on('-m', '--fix-message [MESSAGE]', %q(Add a custom message with the basic 'Fix #ID')) do |message|
     options[:fix_message] = message
   end
 end
