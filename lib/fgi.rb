@@ -14,7 +14,7 @@ module Fgi
   require_relative 'fgi/configuration'
   require_relative 'fgi/git_service'
 
-  VERSION = '1.1.3'.freeze
+  VERSION = '1.1.4'.freeze
 
   # Add FGI user's current issues to the gitignore
   if `cat .gitignore | grep '.current_issues.fgi.yml'`.empty?
