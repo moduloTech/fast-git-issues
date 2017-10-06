@@ -63,6 +63,7 @@ module Fgi
             commit_message += " - #{options[:fix_message]}" unless options[:fix_message].nil?
             `git commit -a --allow-empty -m '#{commit_message}'`
             `git push #{git_remote} HEAD`
+            `git branch -u #{git_remote}/#{name}` # Define the upstream branch
             `git checkout #{CONFIG[:default_branch]}` # Be sure to be on the default branch.
             remove_issue(current_branch)
             puts "Congrat's ! You're now back to work on the default branch (#{CONFIG[:default_branch]})"
@@ -178,7 +179,6 @@ module Fgi
         `git checkout #{from}` # Be sure to be on the default or specified branch.
         `git pull #{git_remote} HEAD` # Be sure to get the remote changes locally.
         `git checkout -b #{name}` # Create the new branch.
-        `git branch -u #{git_remote}/#{name}` # Define the upstream branch
         to = `git branch | grep '*'`.gsub('* ', '').chomp
         puts "\nYou are now working on branch #{to} created from #{from} !"
       end
