@@ -41,6 +41,10 @@ options_parser = OptionParser.new do |fgi|
     options[:prefix] = prefix
   end
 
+  fgi.on('--from-current', 'Tell FGI to create the new issue from a specific branch.') do
+    options[:from_current] = true
+  end
+
   fgi.on('-m', '--fix-message [MESSAGE]', %q(Add a custom message with the basic 'Fix #ID')) do |message|
     options[:fix_message] = message
   end

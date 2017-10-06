@@ -33,7 +33,7 @@ module Fgi
           branch_name = snakify(title)
           branch_name = "#{options[:prefix]}/#{branch_name}" unless options[:prefix].nil?
           save_issue(branch: branch_name, id: response['iid'], title: response['title'].tr("'", ' '))
-          create_branch(branch_name) unless options[:later]
+          create_branch(name: branch_name, from_current: options[:from_current]) unless options[:later]
           set_issue_estimation(
             issue_id:    response['iid'],
             estimation:  options[:estimate],
@@ -167,11 +167,15 @@ module Fgi
 
       # The method used to create branches
       # @param name [String] the branch name
-      def create_branch(name)
+      def create_branch(name:, from_current:)
+        from = if from_current
+                 `git branch | grep '*'`.gsub('* ', '').chomp
+               else
+                 CONFIG[:default_branch]
+               end
         check_status
         git_remote = ask_for_remote
-        `git checkout #{CONFIG[:default_branch]}` # Be sure to be on the default branch.
-        from = `git branch | grep '*'`.gsub('* ', '').chomp
+        `git checkout #{from}` # Be sure to be on the default or specified branch.
         `git pull #{git_remote} HEAD` # Be sure to get the remote changes locally.
         `git checkout -b #{name}` # Create the new branch.
         `git branch -u #{git_remote}/#{name}` # Define the upstream branch
