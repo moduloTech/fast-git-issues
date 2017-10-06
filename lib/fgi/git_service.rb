@@ -174,6 +174,7 @@ module Fgi
         from = `git branch | grep '*'`.gsub('* ', '').chomp
         `git pull #{git_remote} HEAD` # Be sure to get the remote changes locally.
         `git checkout -b #{name}` # Create the new branch.
+        `git branch -u #{git_remote}/#{name}` # Define the tracked upstream branch
         to = `git branch | grep '*'`.gsub('* ', '').chomp
         puts "\nYou are now working on branch #{to} created from #{from} !"
       end
