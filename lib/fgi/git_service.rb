@@ -32,7 +32,7 @@ module Fgi
         elsif !response['iid'].nil?
           branch_name = snakify(title)
           branch_name = "#{options[:prefix]}/#{branch_name}" unless options[:prefix].nil?
-          save_issue(branch: branch_name, id: response['iid'], title: response['title'].tr("'", ' ').tr('_', ''))
+          save_issue(branch: branch_name, id: response['iid'], title: response['title'].tr("'", ' ').tr('_', ' '))
           create_branch(name: branch_name, from_current: options[:from_current]) unless options[:later]
           set_issue_estimation(
             issue_id:    response['iid'],
@@ -87,6 +87,7 @@ module Fgi
         # Since GitLab version isn't up to date, we should be able
         #   to add estimations in issues comments (/estimate)
         url_with_querystring = "#{git_service.routes[:issues]}/#{issue_id}/time_estimate?duration=#{estimation}"
+        headers = { git_service.token_header => TOKEN, 'Content-Type' => 'application/json' }
         response = post(url: url_with_querystring, headers: headers)
         # GitLab sucks sometimes... This API is an example
         begin

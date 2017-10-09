@@ -77,8 +77,8 @@ when 'fix'
 when 'current'
   current_branch = Fgi::GitService.current_branch
   puts "Current branch : #{current_branch}"
-  if defined? Fgi::ISSUES && options[:estimate].present?
-    Fgi::set_issue_estimation(issue_id: Fgi::ISSUES[current_branch][:id], estimation: options[:estimate], git_service: Fgi::CONFIG[:git_service])
+  if (defined? Fgi::ISSUES) && !options[:estimate].nil?
+    Fgi::GitService.set_issue_estimation(issue_id: Fgi::ISSUES[current_branch][:id], estimation: options[:estimate], git_service: Fgi::CONFIG[:git_service_class].new)
     exit!
   elsif Fgi::ISSUES
     puts "Current issue  : #{Fgi::ISSUES[current_branch][:title]}" || 'This branch do not match any FGI issue.'
