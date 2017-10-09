@@ -11,42 +11,39 @@ argv = ARGV
 
 options = {}
 options_parser = OptionParser.new do |fgi|
-  fgi.banner = 'Usage: fgi COMMAND [OPTION]'
-  fgi.separator ''
-  fgi.separator 'Commands'
-  fgi.separator '    config              : run the FGI configurator.'
-  fgi.separator '    token  [TOKEN]      : define the new user token.'
-  fgi.separator '    new    [ISSUE_NAME] : create the issue with the given name.'
-  fgi.separator '    fix                 : fix the current issue.'
-  fgi.separator '    ... more comming soon ...'
-  fgi.separator ''
-  fgi.separator 'Options'
-
-  fgi.on('-h', '--help', 'Display the FGI manual')
-
-  fgi.on('-v', '--version', 'Display the FGI version') do
-    puts "FGI #{Fgi::VERSION}"
-    exit!
-  end
-
+  fgi.banner = 'Usage: fgi COMMAND [OPTIONS]'
+  # CONFIG
+  fgi.separator "\nfgi config                         : run the FGI configurator."
+  # TOKEN
+  fgi.separator "\nfgi token [TOKEN]                  : define the new user token."
+  # NEW
+  fgi.separator "\nfgi new [ISSUE_NAME] [OPTIONS]     : create the issue with the given name.\n\n"
   fgi.on('-e', '--estimate [ESTIMATION]', 'How many time do you think you will spend on this issue ? (example: 1d13h37m05s)') do |estimate|
     options[:estimate] = estimate
   end
-
   fgi.on('-l', '--later', 'Tell FGI that you only want to create an issue but not to create and switch branch.') do
     options[:later] = true
   end
-
   fgi.on('-p', '--prefix [PREFIX]', 'Tell FGI that you want to add a prefix to the branch name.') do |prefix|
     options[:prefix] = prefix
   end
-
   fgi.on('--from-current', 'Tell FGI to create the new issue from a specific branch.') do
     options[:from_current] = true
   end
-
+  # FIX
+  fgi.separator "\nfgi fix [OPTIONS]                  : fix the current issue.\n\n"
   fgi.on('-m', '--fix-message [MESSAGE]', %q(Add a custom message with the basic 'Fix #ID')) do |message|
     options[:fix_message] = message
+  end
+  # CURRENT
+  fgi.separator "\nfgi current [OPTIONS]              : display the current branch and issue."
+  fgi.separator "\n    -e, --estimate [ESTIMATION]      Add/rewrite the estimation time on the current issue. See 'fgi new' options."
+  # COMMON OPTIONS
+  fgi.separator "\nCommon options :\n\n"
+  fgi.on('-h', '--help', 'Display the FGI manual')
+  fgi.on('-v', '--version', 'Display the FGI version') do
+    puts "FGI #{Fgi::VERSION}"
+    exit!
   end
 end
 options_parser.parse!
@@ -77,6 +74,14 @@ when 'token'
   Fgi::Tokens.add_token(argv[1])
 when 'fix'
   Fgi::GitService.fix_issue(options)
+when 'current'
+  current_branch = Fgi::GitService.current_branch
+  puts "Current branch : #{current_branch}"
+  if defined? Fgi::ISSUES
+    puts "Current issue  : #{Fgi::ISSUES[current_branch][:title]}" || 'This branch do not match any FGI issue.'
+  else
+    puts 'This is not an FGI branch. There is no FGI issue for this one.'
+  end
 else
   puts options_parser
 end

@@ -32,7 +32,7 @@ module Fgi
         elsif !response['iid'].nil?
           branch_name = snakify(title)
           branch_name = "#{options[:prefix]}/#{branch_name}" unless options[:prefix].nil?
-          save_issue(branch: branch_name, id: response['iid'], title: response['title'].tr("'", ' '))
+          save_issue(branch: branch_name, id: response['iid'], title: response['title'].tr("'", ' ').tr('_', ''))
           create_branch(name: branch_name, from_current: options[:from_current]) unless options[:later]
           set_issue_estimation(
             issue_id:    response['iid'],
@@ -48,7 +48,6 @@ module Fgi
       #   => Return to the default project branch
       # @param options [Hash] the options given by the user in the command line
       def fix_issue(options)
-        current_branch = `git branch | grep '*'`.gsub('* ', '').chomp
         if ISSUES[current_branch].nil?
           puts "We could not find any issues to fix on your current branch (#{current_branch})."
           exit!
@@ -72,6 +71,10 @@ module Fgi
           puts %q"Why did you killed me ? :'("
           exit!
         end
+      end
+
+      def current_branch
+        `git branch | grep '*'`.gsub('* ', '').chomp
       end
 
       private
@@ -170,7 +173,7 @@ module Fgi
       # @param name [String] the branch name
       def create_branch(name:, from_current:)
         from = if from_current
-                 `git branch | grep '*'`.gsub('* ', '').chomp
+                 current_branch
                else
                  CONFIG[:default_branch]
                end
@@ -179,8 +182,7 @@ module Fgi
         `git checkout #{from}` # Be sure to be on the default or specified branch.
         `git pull #{git_remote} HEAD` # Be sure to get the remote changes locally.
         `git checkout -b #{name}` # Create the new branch.
-        to = `git branch | grep '*'`.gsub('* ', '').chomp
-        puts "\nYou are now working on branch #{to} created from #{from} !"
+        puts "\nYou are now working on branch #{current_branch} created from #{from} !"
       end
 
       # The method used to get the issue description
