@@ -77,6 +77,26 @@ module Fgi
         `git branch | grep '*'`.gsub('* ', '').chomp
       end
 
+      # TODO, Make sure it works for all git services
+      # The method to set the estimation time to resolve the issue
+      # @param issue_id [Integer] the issue id to set its estimation time
+      # @param estimation [String] the estimation time given by the user
+      # @param git_service [Class] the git service class to use for this project
+      def set_issue_estimation(issue_id:, estimation:, git_service:)
+        return if estimation.nil?
+        # Since GitLab version isn't up to date, we should be able
+        #   to add estimations in issues comments (/estimate)
+        url_with_querystring = "#{git_service.routes[:issues]}/#{issue_id}/time_estimate?duration=#{estimation}"
+        response = post(url: url_with_querystring, headers: headers)
+        # GitLab sucks sometimes... This API is an example
+        begin
+          response_body = JSON.parse(response[:body])
+        rescue Exception
+          response_body = response[:body]
+        end
+        post_estimation_display(response_body['human_time_estimate'], estimation)
+      end
+
       private
 
       def ask_for_remote
@@ -129,26 +149,6 @@ module Fgi
         issues = YAML.load_file('.current_issues.fgi.yml')
         issues.delete(branch) unless ISSUES[branch].nil?
         File.open('.current_issues.fgi.yml', 'w') { |f| f.write(issues.to_yaml) }
-      end
-
-      # TODO, Make sure it works for all git services
-      # The method to set the estimation time to resolve the issue
-      # @param issue_id [Integer] the issue id to set its estimation time
-      # @param estimation [String] the estimation time given by the user
-      # @param git_service [Class] the git service class to use for this project
-      def set_issue_estimation(issue_id:, estimation:, git_service:)
-        return if estimation.nil?
-        # Since GitLab version isn't up to date, we should be able
-        #   to add estimations in issues comments (/estimate)
-        url_with_querystring = "#{git_service.routes[:issues]}/#{issue_id}/time_estimate?duration=#{estimation}"
-        response = post(url: url_with_querystring, headers: headers)
-        # GitLab sucks sometimes... This API is an example
-        begin
-          response_body = JSON.parse(response[:body])
-        rescue Exception
-          response_body = response[:body]
-        end
-        post_estimation_display(response_body['human_time_estimate'], estimation)
       end
 
       # TODO, Make sure it works for all git services
