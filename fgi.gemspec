@@ -3,7 +3,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |spec|
   spec.name          = 'fgi'
-  spec.version       = '1.1.5'
+  spec.version       = '1.1.6'
   spec.authors       = ['Julien Philibin', 'Matthieu Gourvénec']
   spec.email         = %w[philib_j@modulotech.fr gourve_m@modulotech.fr]
   spec.summary       = 'Process and workflow simplifier for git projects.'
