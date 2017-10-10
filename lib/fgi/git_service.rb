@@ -56,6 +56,7 @@ module Fgi
           puts "We could not find any issues to fix on your current branch (#{current_branch})."
           exit!
         end
+        set_spent_time(options: options, issue_id: ISSUES[current_branch][:id])
         git_remote = ask_for_remote
         `git add .`
         puts "Are you sure to want to close the issue #{ISSUES[current_branch][:title]} ?"
@@ -82,6 +83,7 @@ module Fgi
       # @param issue_id [Integer] the issue id to set its estimation time
       # @param estimation [String] the estimation time given by the user
       # @param git_service [Class] the git service class to use for this project
+      # @param tracker [Symbol] the tracker to set. Can be :estimate or :spent
       def set_issue_time_trackers(issue_id:, duration:, git_service:, tracker:)
         return if duration.nil? || !%i[estimate spent].include?(tracker)
         # Since GitLab version isn't up to date, we should be able
@@ -96,9 +98,9 @@ module Fgi
         response = post(url: url_with_querystring, headers: headers)
         # GitLab sucks sometimes... This API is an example
         begin
-          response_body = JSON.parse(response[:body])
+          JSON.parse(response[:body])
         rescue Exception
-          response_body = response[:body]
+          response[:body]
         end
       end
 
@@ -133,6 +135,17 @@ module Fgi
           puts %q"Why did you killed me ? :'("
           exit!
         end
+      end
+
+      def set_spent_time(options:, issue_id:)
+        return if options[:duration].nil?
+        res = set_issue_time_trackers(
+          issue_id:    issue_id,
+          duration:    options[:duration],
+          git_service: CONFIG[:git_service_class].new,
+          tracker:     :spent
+        )
+        post_spent_display(res['human_time_estimate'], options[:duration])
       end
 
       # Save the current user's FGI created issue in the gitignored file 'current_issue.fgi.yml'
@@ -243,6 +256,15 @@ module Fgi
           puts "You'll have to do it manually on #{CONFIG[:git_service].capitalize}."
         else
           puts "\nYou have #{estimation} to resolve this issue. Good luck ;)"
+        end
+      end
+
+      def post_spent_display(response_spent, spent_time)
+        if response_spent.nil?
+          puts "\nWe weren't able to save your spent time."
+          puts "You'll have to do it manually on #{CONFIG[:git_service].capitalize}."
+        else
+          puts "\nYou have spent #{spent_time} on this issue."
         end
       end
 

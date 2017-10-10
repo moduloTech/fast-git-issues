@@ -35,6 +35,9 @@ options_parser = OptionParser.new do |fgi|
   fgi.on('-m', '--fix-message [MESSAGE]', %q(Add a custom message with the basic 'Fix #ID')) do |message|
     options[:fix_message] = message
   end
+  fgi.on('-s', '--spent [SPENT_TIME]', 'How many time have you spent on this issue ? (example: 1d13h37m05s)') do |spent|
+    options[:duration] = spent
+  end
   # CURRENT
   fgi.separator "\nfgi current [OPTIONS]              : display the current branch and issue."
   fgi.separator "\n    -e, --estimate [ESTIMATION]      Add/rewrite the estimation time on the current issue. See 'fgi new' options."
@@ -78,7 +81,8 @@ when 'current'
   current_branch = Fgi::GitService.current_branch
   puts "Current branch : #{current_branch}"
   if (defined? Fgi::ISSUES) && !options[:duration].nil?
-    Fgi::GitService.set_issue_time_trackers(issue_id: Fgi::ISSUES[current_branch][:id], duration: options[:duration], git_service: Fgi::CONFIG[:git_service_class].new, tracker: :estimate)
+    res = Fgi::GitService.set_issue_time_trackers(issue_id: Fgi::ISSUES[current_branch][:id], duration: options[:duration], git_service: Fgi::CONFIG[:git_service_class].new, tracker: :estimate)
+    post_estimation_display(res['human_time_estimate'], options[:duration])
     exit!
   elsif Fgi::ISSUES
     puts "Current issue  : #{Fgi::ISSUES[current_branch][:title]}" || 'This branch do not match any FGI issue.'
