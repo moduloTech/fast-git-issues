@@ -34,11 +34,12 @@ module Fgi
           branch_name = "#{options[:prefix]}/#{branch_name}" unless options[:prefix].nil?
           save_issue(branch: branch_name, id: response['iid'], title: response['title'].tr("'", ' ').tr('_', ' '))
           create_branch(name: branch_name, from_current: options[:from_current]) unless options[:later]
-          set_issue_estimation(
+          set_issue_time_trackers(
             issue_id:    response['iid'],
-            estimation:  options[:estimate],
-            git_service: git_service
-          )
+            estimation:  options[:duration],
+            git_service: git_service,
+            tracker:     :estimate
+          ) unless options[:duration].nil?
         end
       end
 
