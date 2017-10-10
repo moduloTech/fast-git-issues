@@ -19,7 +19,7 @@ options_parser = OptionParser.new do |fgi|
   # NEW
   fgi.separator "\nfgi new [ISSUE_NAME] [OPTIONS]     : create the issue with the given name.\n\n"
   fgi.on('-e', '--estimate [ESTIMATION]', 'How many time do you think you will spend on this issue ? (example: 1d13h37m05s)') do |estimate|
-    options[:estimate] = estimate
+    options[:duration] = estimate
   end
   fgi.on('-l', '--later', 'Tell FGI that you only want to create an issue but not to create and switch branch.') do
     options[:later] = true
@@ -77,8 +77,8 @@ when 'fix'
 when 'current'
   current_branch = Fgi::GitService.current_branch
   puts "Current branch : #{current_branch}"
-  if (defined? Fgi::ISSUES) && !options[:estimate].nil?
-    Fgi::GitService.set_issue_estimation(issue_id: Fgi::ISSUES[current_branch][:id], estimation: options[:estimate], git_service: Fgi::CONFIG[:git_service_class].new)
+  if (defined? Fgi::ISSUES) && !options[:duration].nil?
+    Fgi::GitService.set_issue_time_trackers(issue_id: Fgi::ISSUES[current_branch][:id], duration: options[:duration], git_service: Fgi::CONFIG[:git_service_class].new, tracker: :estimate)
     exit!
   elsif Fgi::ISSUES
     puts "Current issue  : #{Fgi::ISSUES[current_branch][:title]}" || 'This branch do not match any FGI issue.'

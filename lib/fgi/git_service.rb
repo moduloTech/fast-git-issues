@@ -34,12 +34,15 @@ module Fgi
           branch_name = "#{options[:prefix]}/#{branch_name}" unless options[:prefix].nil?
           save_issue(branch: branch_name, id: response['iid'], title: response['title'].tr("'", ' ').tr('_', ' '))
           create_branch(name: branch_name, from_current: options[:from_current]) unless options[:later]
-          set_issue_time_trackers(
-            issue_id:    response['iid'],
-            estimation:  options[:duration],
-            git_service: git_service,
-            tracker:     :estimate
-          ) unless options[:duration].nil?
+          unless options[:duration].nil?
+            res = set_issue_time_trackers(
+                    issue_id:    response['iid'],
+                    estimation:  options[:duration],
+                    git_service: git_service,
+                    tracker:     :estimate
+                  )
+            post_estimation_display(res['human_time_estimate'], options[:duration])
+          end
         end
       end
 
@@ -80,7 +83,7 @@ module Fgi
       # @param estimation [String] the estimation time given by the user
       # @param git_service [Class] the git service class to use for this project
       def set_issue_time_trackers(issue_id:, duration:, git_service:, tracker:)
-        return if duration.nil? || !tracker.in?(%i[estimate spent])
+        return if duration.nil? || !%i[estimate spent].include?(tracker)
         # Since GitLab version isn't up to date, we should be able
         #   to add estimations and spent time in issues comments (/estimate, /spent)
         api = if tracker == :spent
@@ -97,7 +100,6 @@ module Fgi
         rescue Exception
           response_body = response[:body]
         end
-        post_estimation_display(response_body['human_time_estimate'], estimation)
       end
 
       def current_branch
