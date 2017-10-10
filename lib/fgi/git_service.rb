@@ -37,7 +37,7 @@ module Fgi
           unless options[:duration].nil?
             res = set_issue_time_trackers(
                     issue_id:    response['iid'],
-                    estimation:  options[:duration],
+                    duration:    options[:duration],
                     git_service: git_service,
                     tracker:     :estimate
                   )
