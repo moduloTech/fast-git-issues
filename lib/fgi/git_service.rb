@@ -62,7 +62,7 @@ module Fgi
             commit_message += " - #{options[:fix_message]}" unless options[:fix_message].nil?
             `git commit -a --allow-empty -m '#{commit_message}'`
             `git push #{git_remote} HEAD`
-            `git branch -u #{git_remote}/#{name}` # Define the upstream branch
+            `git branch -u #{git_remote}/#{ISSUES[current_branch]}` # Define the upstream branch
             `git checkout #{CONFIG[:default_branch]}` # Be sure to be on the default branch.
             remove_issue(current_branch)
             puts "Congrat's ! You're now back to work on the default branch (#{CONFIG[:default_branch]})"
@@ -73,20 +73,21 @@ module Fgi
         end
       end
 
-      def current_branch
-        `git branch | grep '*'`.gsub('* ', '').chomp
-      end
-
       # TODO, Make sure it works for all git services
       # The method to set the estimation time to resolve the issue
       # @param issue_id [Integer] the issue id to set its estimation time
       # @param estimation [String] the estimation time given by the user
       # @param git_service [Class] the git service class to use for this project
-      def set_issue_estimation(issue_id:, estimation:, git_service:)
-        return if estimation.nil?
+      def set_issue_time_trackers(issue_id:, duration:, git_service:, tracker:)
+        return if duration.nil? || !tracker.in?(%i[estimate spent])
         # Since GitLab version isn't up to date, we should be able
-        #   to add estimations in issues comments (/estimate)
-        url_with_querystring = "#{git_service.routes[:issues]}/#{issue_id}/time_estimate?duration=#{estimation}"
+        #   to add estimations and spent time in issues comments (/estimate, /spent)
+        api = if tracker == :spent
+                'add_spent_time'
+              else
+                'time_estimate'
+              end
+        url_with_querystring = "#{git_service.routes[:issues]}/#{issue_id}/#{api}?duration=#{duration}"
         headers = { git_service.token_header => TOKEN, 'Content-Type' => 'application/json' }
         response = post(url: url_with_querystring, headers: headers)
         # GitLab sucks sometimes... This API is an example
@@ -96,6 +97,10 @@ module Fgi
           response_body = response[:body]
         end
         post_estimation_display(response_body['human_time_estimate'], estimation)
+      end
+
+      def current_branch
+        `git branch | grep '*'`.gsub('* ', '').chomp
       end
 
       private

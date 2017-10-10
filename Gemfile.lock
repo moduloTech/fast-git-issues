@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    fgi (1.1.4)
+    fgi (1.1.5)
 
 GEM
   remote: https://rubygems.org/
