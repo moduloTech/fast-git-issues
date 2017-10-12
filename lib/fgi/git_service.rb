@@ -67,9 +67,9 @@ module Fgi
             commit_message += " - #{options[:fix_message]}" unless options[:fix_message].nil?
             `git commit -a --allow-empty -m '#{commit_message}'`
             `git push #{git_remote} HEAD`
-            `git branch -u #{git_remote}/#{ISSUES[current_branch]}` # Define the upstream branch
-            `git checkout #{CONFIG[:default_branch]}` # Be sure to be on the default branch.
+            `git branch -u #{git_remote}/#{current_branch}` # Define the upstream branch
             remove_issue(current_branch)
+            `git checkout #{CONFIG[:default_branch]}` # Be sure to be on the default branch.
             puts "Congrat's ! You're now back to work on the default branch (#{CONFIG[:default_branch]})"
           end
         rescue Interrupt
