@@ -13,7 +13,7 @@ module Fgi
           tokens[git_service.to_sym] = { config[:url] => token }
         else
           tokens = {
-            git_service => {
+            git_service.to_sym => {
               config[:url] => token
             }
           }
